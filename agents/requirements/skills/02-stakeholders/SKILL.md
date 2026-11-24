@@ -1,5 +1,5 @@
 ---
-name: requirements-stakeholders
+name: requirements-02-stakeholders
 description: >
   Use during gate G1, after intake has a cited problem and needs, to build
   the stakeholder register from people and roles the source names. Use again

@@ -1,5 +1,5 @@
 ---
-name: requirements-srs-assembly
+name: requirements-10-srs-assembly
 description: >
   Use at gate G5, after traceability is frozen and no blocking question is
   open, to assemble the IEEE 29148 SRS in Markdown and JSON. Sets status to

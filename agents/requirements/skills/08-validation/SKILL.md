@@ -1,5 +1,5 @@
 ---
-name: requirements-validation
+name: requirements-08-validation
 description: >
   Use at gate G3, after elicitation, to judge the draft against the
   validation checklist and ISO/IEC/IEEE 29148. Use on every loop. Source

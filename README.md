@@ -6,6 +6,28 @@ This repository currently contains one agent: **requirements**. Design, build, t
 
 The requirements agent is independent of any particular bot product or agent framework. The procedure is Markdown. Any assistant that can read the skill files and write the output folder can run it.
 
+## Set up a coding tool
+
+`agents/<agent>/skills/` stays the source of truth. One setup command publishes those skills to Claude Code, Cursor, or OpenCode. Windows uses a batch file and does not need PowerShell.
+
+On Windows, from `cmd.exe` in this repository:
+
+```bat
+setup.cmd all
+```
+
+`setup.cmd` runs `py -3` and falls back to `python`. The first Windows run copies the skill files. After you edit a skill, refresh the copies with `setup.cmd --sync`.
+
+On macOS, Linux, or Git Bash:
+
+```sh
+./setup.sh all
+```
+
+That run symlinks the skill files so an edit shows up immediately, and it copies them if a symlink cannot be created. Targets are `claude`, `cursor`, `opencode`, and `all`.
+
+Open the repository in VS Code and run `/requirements` followed by the high-level need. GitHub Copilot and other AGENTS.md readers pick up `AGENTS.md` from a `cursor`, `opencode`, or `all` setup. The file list, the refresh and clean commands, and the steps for adding another tool are in [docs/tool-setup.md](docs/tool-setup.md).
+
 ## Roadmap
 
 | Phase | Agent | What it will take | What it will produce | State |
@@ -28,6 +50,8 @@ Gates, entry and exit criteria, and the skill mapping are in [docs/sdlc-gates.md
 
 ## How to run the requirements agent
 
+Set the editor up with [docs/tool-setup.md](docs/tool-setup.md), then run `/requirements` and the high-level need. The steps below are the procedure that command follows.
+
 1. Put the high-level request somewhere durable. Do not let the agent "improve" it in place. The sample request is [agents/requirements/examples/input-brd-sample.md](agents/requirements/examples/input-brd-sample.md).
 2. Give the assistant [agents/requirements/agent/orchestrator.md](agents/requirements/agent/orchestrator.md) and [agents/requirements/agent/config.yaml](agents/requirements/agent/config.yaml) as its procedure.
 3. Tell it the engagement id and the output directory, normally `agents/requirements/output/<engagement-id>/`.
@@ -35,7 +59,7 @@ Gates, entry and exit criteria, and the skill mapping are in [docs/sdlc-gates.md
 5. Review the proposed package: `srs.md`, `srs.json`, `rtm.csv`, `glossary.md`, `open-questions.md`.
 6. A person records approval. The agent sets status only as far as `proposed`. Design does not start from a proposed package. See [docs/agent-handoff.md](docs/agent-handoff.md).
 
-Skill files are the steps. Each has YAML front matter (`name`, `description`) and the same sections: Purpose, Inputs, Method, Output format, Quality checklist, Gate. Shared shapes are [shared/schemas/requirement.schema.json](shared/schemas/requirement.schema.json) and [shared/schemas/srs.schema.json](shared/schemas/srs.schema.json). The empty narrative skeleton is [shared/templates/srs-ieee29148.md](shared/templates/srs-ieee29148.md).
+Skill files are the steps. Each has YAML front matter (`name`, `description`) and the same sections: Purpose, Inputs, Method, Output format, Quality checklist, Gate. The `name` is `<agent>-<skill-directory>` in kebab-case, for example `requirements-01-intake`. Shared shapes are [shared/schemas/requirement.schema.json](shared/schemas/requirement.schema.json) and [shared/schemas/srs.schema.json](shared/schemas/srs.schema.json). The empty narrative skeleton is [shared/templates/srs-ieee29148.md](shared/templates/srs-ieee29148.md).
 
 ## What the agent will not do
 
@@ -52,13 +76,19 @@ Skill files are the steps. Each has YAML front matter (`name`, `description`) an
 ```text
 DevWorkbench/
   README.md
+  setup.cmd
+  setup.sh
   docs/sdlc-gates.md
   docs/agent-handoff.md
+  docs/tool-setup.md
+  scripts/setup.py
+  scripts/check_setup.py
   shared/schemas/requirement.schema.json
   shared/schemas/srs.schema.json
   shared/templates/srs-ieee29148.md
   shared/templates/rtm.csv
   shared/templates/glossary.md
+  shared/tool-adapters/
   agents/requirements/
     agent/orchestrator.md
     agent/config.yaml
@@ -78,6 +108,7 @@ The sample source is a working note from a city parking sponsor. It states rules
 Check the sample package:
 
 ```bash
+python3 scripts/check_setup.py
 python3 agents/requirements/tests/eval-cases/check_handoff.py
 ```
 

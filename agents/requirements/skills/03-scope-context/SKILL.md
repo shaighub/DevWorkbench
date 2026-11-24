@@ -1,5 +1,5 @@
 ---
-name: requirements-scope-context
+name: requirements-03-scope-context
 description: >
   Use during gate G1, after stakeholders exist, to fix in-scope and
   out-of-scope items, the context of named external parties, constraints,
