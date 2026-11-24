@@ -1,0 +1,2 @@
+Requirement ID,Type,Statement,Priority,Status,Source Need IDs,Citations,Stakeholder IDs,Use Case IDs,User Story IDs,Acceptance Criteria IDs,Verification Method,Quality Attribute,Design Element ID,Test Case ID
+FR-000,functional,"(Delete this example row.) The portal shall refuse submission when the address is not on the supplied list.",Must,proposed,NEED-000,BRD §0,STK-000,UC-000,US-000,AC-FR-000-01,test,,,

@@ -1,0 +1,161 @@
+# Procedure configuration for the requirements agent.
+# The orchestrator is normative. This file is the index it loads first.
+
+agent:
+  id: requirements
+  name: Requirements Agent
+  version: 1.0.0
+  preparedBy: requirements-agent
+
+standards:
+  srs: ISO/IEC/IEEE 29148:2018
+  srsOutline: clause 9.6
+  requirementCharacteristics: clause 5.2
+  qualityModel: ISO/IEC 25010:2023
+  qualityModelAliases:
+    interaction-capability: "ISO/IEC 25010:2011 usability"
+    flexibility: "ISO/IEC 25010:2011 portability"
+  priority: MoSCoW
+  acceptanceCriteria: Gherkin
+  verificationMethods: [inspection, demonstration, test, analysis]
+  modalVerb: shall
+
+paths:
+  orchestrator: agents/requirements/agent/orchestrator.md
+  schemas:
+    requirement: shared/schemas/requirement.schema.json
+    srs: shared/schemas/srs.schema.json
+  templates:
+    srs: shared/templates/srs-ieee29148.md
+    rtm: shared/templates/rtm.csv
+    glossary: shared/templates/glossary.md
+  gates: docs/sdlc-gates.md
+  handoff: docs/agent-handoff.md
+  outputRoot: agents/requirements/output
+  example:
+    input: agents/requirements/examples/input-brd-sample.md
+    output: agents/requirements/examples/output-sample
+
+packageFiles:
+  - srs.md
+  - srs.json
+  - rtm.csv
+  - glossary.md
+  - open-questions.md
+
+rules:
+  - Preserve the source unchanged under source/.
+  - Do not write a shall without a citation and a need id.
+  - Do not encode MoSCoW by changing shall to should or may.
+  - Do not answer an unknown. Append it to open-questions.md.
+  - Do not pick a side in a contradiction.
+  - Do not add behavior in a use case or a user story.
+  - Do not invent interface representation, storage design, or quality numbers.
+  - Do not set meta.status to approved or handed-off.
+  - Leave RTM design and test columns empty.
+  - After G4, do not reuse or renumber an identifier.
+
+limits:
+  maxValidationCycles: 3
+
+skills:
+  - id: "01"
+    directory: skills/01-intake
+    name: requirements-intake
+    gate: G1
+    produces:
+      - working/01-intake.md
+      - working/01-intake.json
+  - id: "02"
+    directory: skills/02-stakeholders
+    name: requirements-stakeholders
+    gate: G1
+    produces:
+      - working/02-stakeholders.md
+      - working/02-stakeholders.json
+  - id: "03"
+    directory: skills/03-scope-context
+    name: requirements-scope-context
+    gate: G1
+    produces:
+      - working/03-scope-context.md
+      - working/03-scope-context.json
+  - id: "04"
+    directory: skills/04-functional-reqs
+    name: requirements-functional
+    gate: G2
+    produces:
+      - working/04-functional-reqs.md
+      - working/04-functional-reqs.json
+  - id: "05"
+    directory: skills/05-use-cases-stories
+    name: requirements-use-cases-stories
+    gate: G2
+    produces:
+      - working/05-use-cases-stories.md
+      - working/05-use-cases-stories.json
+  - id: "06"
+    directory: skills/06-nonfunctional-reqs
+    name: requirements-nonfunctional
+    gate: G2
+    produces:
+      - working/06-nonfunctional-reqs.md
+      - working/06-nonfunctional-reqs.json
+  - id: "07"
+    directory: skills/07-data-interfaces
+    name: requirements-data-interfaces
+    gate: G2
+    produces:
+      - working/07-data-interfaces.md
+      - working/07-data-interfaces.json
+  - id: "08"
+    directory: skills/08-validation
+    name: requirements-validation
+    gate: G3
+    produces:
+      - working/08-validation.md
+      - working/08-validation.json
+  - id: "09"
+    directory: skills/09-traceability
+    name: requirements-traceability
+    gate: G4
+    produces:
+      - working/09-traceability.md
+      - rtm.csv
+  - id: "10"
+    directory: skills/10-srs-assembly
+    name: requirements-srs-assembly
+    gate: G5
+    produces:
+      - srs.md
+      - srs.json
+      - glossary.md
+      - open-questions.md
+
+gates:
+  G1:
+    name: Intake and Scope
+    skills: ["01", "02", "03"]
+    entry: A high-level need is preserved unchanged under source/.
+    exit: Cited problem and needs, stakeholder register, cited scope and exclusions, glossary seeds or questions, and no requirements yet.
+  G2:
+    name: Requirements Elicited
+    skills: ["04", "05", "06", "07"]
+    entry: G1 exit is recorded and no blocking open question is unanswered.
+    exit: Cited singular shalls with MoSCoW, Gherkin, and 25010 coverage; scenarios that add no behavior; logical data and interfaces.
+  G3:
+    name: Requirements Validated
+    skills: ["08"]
+    entry: A complete G2 draft.
+    exit: Validation checklist clear. Source gaps return to G1. Wording defects return to G2.
+    loopTo: G1
+  G4:
+    name: Traceability Baselined
+    skills: ["09"]
+    entry: G3 passed on this cycle.
+    exit: RTM complete, consumer columns empty, identifiers frozen, no orphans.
+  G5:
+    name: SRS Approved and Handed Off
+    skills: ["10"]
+    entry: G4 passed and no blocking open question is open.
+    exit: Proposed SRS in Markdown and JSON, human approval still unrecorded.

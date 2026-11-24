@@ -1,0 +1,2733 @@
+{
+  "meta": {
+    "schemaVersion": "1.0.0",
+    "standard": "ISO/IEC/IEEE 29148:2018",
+    "qualityModel": "ISO/IEC 25010:2023",
+    "priorityScheme": "MoSCoW",
+    "acceptanceCriteriaNotation": "Gherkin",
+    "documentId": "SRS-RPP-001",
+    "title": "Residential Parking Permit Portal — software requirements specification",
+    "project": "Northwind Residential Parking Permit Portal",
+    "version": "0.1.0",
+    "status": "proposed",
+    "engagementId": "rpp-2026-03",
+    "preparedBy": "requirements-agent",
+    "sourceDocument": "agents/requirements/examples/input-brd-sample.md",
+    "idPolicy": "Identifiers were frozen at gate G4. Withdrawn identifiers are not reused. Design and test add their own columns and do not renumber these rows."
+  },
+  "introduction": {
+    "purpose": "This software requirements specification is the proposed baseline for design, build, and test of the Residential Parking Permit Portal. It tells the sponsor what will be held as requirements and tells later agents which decisions they must not make. It is not an approved handoff until a named person records approval.",
+    "scope": "The product lets a resident apply for one vehicle, prove an eligible address, pay the current ordinance fee after a clerk approves, and receive a permit an officer can check by plate without seeing personal details. Topics the sponsor excluded are out of scope. Topics the sponsor left open are open questions, not defaults. A topic in neither list is not a requirement.",
+    "productPerspective": "Residents sign in with a one-time email link and do not receive a city password. Clerks sign in through the city single sign-on. The portal sends the resident to CityPay for card entry, sends three notices through CityNotify, and answers a lookup the enforcement handheld will call. Parking Services supplies the cleaned address list and the current fees as data. No other external party is in the source.",
+    "productFunctions": [
+      "Record one application for one vehicle and accept submission only when the address and the file pass (FR-001, FR-002, FR-003, FR-004).",
+      "Let a parking clerk approve or reject a submitted application (FR-005, FR-006).",
+      "Show the current fee, take payment on CityPay, and issue an Active permit (FR-007, FR-008, FR-009, FR-010).",
+      "Email the resident at submission, rejection, and issuance (FR-011, FR-012).",
+      "Start a renewal inside the stated window from the current permit (FR-013).",
+      "Suspend or revoke with a reason code, and keep that permit off Active lookups (FR-014, FR-015).",
+      "Answer a plate lookup with zone, status, and expiry only (FR-019, FR-020).",
+      "Produce the monthly zone figures (FR-016)."
+    ],
+    "userCharacteristics": [
+      "Residents were not in the working session. The sponsor said they do not get a city network account (STK-001).",
+      "Parking clerks use the city sign-on and decide applications and permit status under the stated rules (STK-002).",
+      "Enforcement officers use the existing handheld and do not review applications (STK-003).",
+      "Finance reconciles references and amounts and does not use the portal day to day (STK-004).",
+      "The accessibility coordinator and the privacy officer were named as reviewers and were not interviewed. They have no quotations in the source (STK-005, STK-006).",
+      "Dana Okonkwo was interviewed and accepts or rejects scope (STK-007). Interest and influence values elsewhere in the register are analyst judgments or are unknown."
+    ],
+    "limitations": [
+      "Visitor, temporary, and commercial permits, citations, appeals, meter payment, electric-vehicle-only bays, address overrides, a household cap, and post-expiry renewal are Won't (SC-OUT-01 through SC-OUT-07).",
+      "Open questions OQ-001 through OQ-007 are unanswered. Downstream work must not invent those decisions.",
+      "Handheld representation and clerk sign-on token format are deferred to design inside the business data already stated.",
+      "No assumption was required. Where a fact was missing, a question was raised instead."
+    ]
+  },
+  "references": [
+    {
+      "id": "REF-SRC",
+      "citation": "Sponsor working note, 12 March 2026, preserved at agents/requirements/examples/input-brd-sample.md."
+    },
+    {
+      "id": "REF-29148",
+      "citation": "ISO/IEC/IEEE 29148:2018, Systems and software engineering — Life cycle processes — Requirements engineering."
+    },
+    {
+      "id": "REF-25010",
+      "citation": "ISO/IEC 25010:2023, Systems and software engineering — Systems and software Quality Requirements and Evaluation (SQuaRE) — Product quality model."
+    },
+    {
+      "id": "POL-ACC-01",
+      "citation": "Named by the sponsor. Full text is not in the source. The sentences that apply are in BRD §7."
+    },
+    {
+      "id": "POL-BROWSER-02",
+      "citation": "Named by the sponsor. Full text is not in the source. The sentences that apply are in BRD §7."
+    },
+    {
+      "id": "POL-AVAIL-03",
+      "citation": "Named by the sponsor. Full text is not in the source. The sentences that apply are in BRD §7."
+    },
+    {
+      "id": "POL-SEC-04",
+      "citation": "Named by the sponsor. Full text is not in the source. The sentences that apply are in BRD §6.12 and BRD §7."
+    }
+  ],
+  "stakeholders": [
+    {
+      "id": "STK-001",
+      "name": "Resident",
+      "role": "Applies, pays, and renews. Does not receive a city network account.",
+      "namedInSource": true,
+      "interviewed": false,
+      "concerns": [
+        "Needs to obtain a permit and pay online instead of queueing at the counter (BRD §2, BRD §3)."
+      ],
+      "decisionRights": "None recorded.",
+      "interest": "high",
+      "influence": "low",
+      "interestIsJudgment": true
+    },
+    {
+      "id": "STK-002",
+      "name": "Parking clerk",
+      "role": "Reviews applications and suspends or revokes permits, using the city sign-on.",
+      "namedInSource": true,
+      "interviewed": false,
+      "concerns": [
+        "Reviews proof and decides Submitted applications (BRD §4, BRD §6.5, BRD §6.6)."
+      ],
+      "decisionRights": "May approve or reject a Submitted application and may suspend or revoke an Active permit under the stated rules (BRD §6.5, BRD §6.6, BRD §6.8).",
+      "interest": "high",
+      "influence": "medium",
+      "interestIsJudgment": true
+    },
+    {
+      "id": "STK-003",
+      "name": "Enforcement officer",
+      "role": "Looks a plate up from the existing handheld. Does not review applications.",
+      "namedInSource": true,
+      "interviewed": false,
+      "concerns": [
+        "Needs permit zone, status, and expiry without the resident's personal details (BRD §2, BRD §6.11)."
+      ],
+      "decisionRights": "None recorded.",
+      "interest": "high",
+      "influence": "unknown",
+      "interestIsJudgment": true
+    },
+    {
+      "id": "STK-004",
+      "name": "Finance",
+      "role": "Reconciles CityPay collections. Does not use the portal day to day.",
+      "namedInSource": true,
+      "interviewed": false,
+      "concerns": [
+        "Needs the CityPay reference and the amount reported as paid (BRD §4, BRD §6.12)."
+      ],
+      "decisionRights": "None recorded.",
+      "interest": "medium",
+      "influence": "unknown",
+      "interestIsJudgment": true
+    },
+    {
+      "id": "STK-005",
+      "name": "Accessibility coordinator",
+      "role": "Named reviewer of POL-ACC-01. Was not in the working session.",
+      "namedInSource": true,
+      "interviewed": false,
+      "concerns": [
+        "Named as a reviewer of POL-ACC-01. No statement from this person is in the source (BRD §4)."
+      ],
+      "decisionRights": "None recorded.",
+      "interest": "unknown",
+      "influence": "unknown",
+      "interestIsJudgment": false
+    },
+    {
+      "id": "STK-006",
+      "name": "Privacy officer",
+      "role": "Named reviewer of the cited privacy-related policies. Was not in the working session.",
+      "namedInSource": true,
+      "interviewed": false,
+      "concerns": [
+        "Named as a reviewer. No statement from this person is in the source (BRD §4)."
+      ],
+      "decisionRights": "None recorded.",
+      "interest": "unknown",
+      "influence": "unknown",
+      "interestIsJudgment": false
+    },
+    {
+      "id": "STK-007",
+      "name": "Dana Okonkwo",
+      "role": "Parking Services Manager and sponsor of this request.",
+      "namedInSource": true,
+      "interviewed": true,
+      "concerns": [
+        "Wants residents to apply and pay online and officers to check a plate without hearing personal details (BRD §2)."
+      ],
+      "decisionRights": "Accepts or rejects scope for this request (BRD §4).",
+      "interest": "high",
+      "influence": "high",
+      "interestIsJudgment": true
+    }
+  ],
+  "needs": [
+    {
+      "id": "NEED-001",
+      "statement": "A resident of an eligible address needs a one-year permission to park one stated vehicle without coming to the counter.",
+      "stakeholderIds": [
+        "STK-001"
+      ],
+      "priority": "Must",
+      "citations": [
+        "BRD §2",
+        "BRD §3"
+      ],
+      "status": "proposed"
+    },
+    {
+      "id": "NEED-002",
+      "statement": "The resident needs to pay the published fee for that permission, and finance needs the CityPay reference and amount.",
+      "stakeholderIds": [
+        "STK-001",
+        "STK-004"
+      ],
+      "priority": "Must",
+      "citations": [
+        "BRD §3",
+        "BRD §6.12"
+      ],
+      "status": "proposed"
+    },
+    {
+      "id": "NEED-003",
+      "statement": "An enforcement officer needs a plate's permit zone, status, and expiry without receiving the resident's name, address, email, or proof-of-address file.",
+      "stakeholderIds": [
+        "STK-003"
+      ],
+      "priority": "Must",
+      "citations": [
+        "BRD §2",
+        "BRD §6.11"
+      ],
+      "status": "proposed"
+    },
+    {
+      "id": "NEED-004",
+      "statement": "A resident who holds an Active permit needs to start a renewal inside the stated window without retyping the stored name, address, plate, and jurisdiction.",
+      "stakeholderIds": [
+        "STK-001"
+      ],
+      "priority": "Must",
+      "citations": [
+        "BRD §6.7"
+      ],
+      "status": "proposed"
+    },
+    {
+      "id": "NEED-005",
+      "statement": "A parking clerk needs to stop an Active permit from being treated as valid when eligibility has lapsed or fraud has been found, and needs that decision recorded.",
+      "stakeholderIds": [
+        "STK-002"
+      ],
+      "priority": "Must",
+      "citations": [
+        "BRD §3",
+        "BRD §6.8",
+        "BRD §6.13"
+      ],
+      "status": "proposed"
+    },
+    {
+      "id": "NEED-006",
+      "statement": "A resident needs to complete application entry, file upload, and the CityPay handoff on a phone and under the accessibility and browser policies the sponsor cited.",
+      "stakeholderIds": [
+        "STK-001"
+      ],
+      "priority": "Must",
+      "citations": [
+        "BRD §7"
+      ],
+      "status": "proposed"
+    },
+    {
+      "id": "NEED-007",
+      "statement": "The resident's proof-of-address file and payment card data need to stay with the people and the processor the sponsor named.",
+      "stakeholderIds": [
+        "STK-001",
+        "STK-007"
+      ],
+      "priority": "Must",
+      "citations": [
+        "BRD §6.4",
+        "BRD §6.12"
+      ],
+      "status": "proposed"
+    },
+    {
+      "id": "NEED-008",
+      "statement": "The sponsor needs monthly counts of permits issued, permits expired, and fees collected, grouped by zone, and will still open the resident service if this slips.",
+      "stakeholderIds": [
+        "STK-007"
+      ],
+      "priority": "Should",
+      "citations": [
+        "BRD §3",
+        "BRD §6.14"
+      ],
+      "status": "proposed"
+    },
+    {
+      "id": "NEED-009",
+      "statement": "A resident needs to sign in by proving control of an email address, without a city-issued password.",
+      "stakeholderIds": [
+        "STK-001"
+      ],
+      "priority": "Must",
+      "citations": [
+        "BRD §6.10"
+      ],
+      "status": "proposed"
+    },
+    {
+      "id": "NEED-010",
+      "statement": "A clerk's authority needs to come from the city single sign-on group parking-clerk, not from an account this product invents.",
+      "stakeholderIds": [
+        "STK-002"
+      ],
+      "priority": "Must",
+      "citations": [
+        "BRD §6.10"
+      ],
+      "status": "proposed"
+    }
+  ],
+  "scope": {
+    "inScope": [
+      {
+        "id": "SC-IN-01",
+        "item": "Online application for a resident, one vehicle per application.",
+        "citations": [
+          "BRD §5",
+          "BRD §6.1"
+        ]
+      },
+      {
+        "id": "SC-IN-02",
+        "item": "One proof-of-address file on that application.",
+        "citations": [
+          "BRD §5",
+          "BRD §6.4"
+        ]
+      },
+      {
+        "id": "SC-IN-03",
+        "item": "Clerk decision to approve or reject a submitted application.",
+        "citations": [
+          "BRD §5",
+          "BRD §6.6"
+        ]
+      },
+      {
+        "id": "SC-IN-04",
+        "item": "Payment of the annual fee through CityPay after approval.",
+        "citations": [
+          "BRD §5",
+          "BRD §6.6"
+        ]
+      },
+      {
+        "id": "SC-IN-05",
+        "item": "Issuing the permit.",
+        "citations": [
+          "BRD §5",
+          "BRD §6.6"
+        ]
+      },
+      {
+        "id": "SC-IN-06",
+        "item": "Renewal inside the window in BRD §6.7.",
+        "citations": [
+          "BRD §5",
+          "BRD §6.7"
+        ]
+      },
+      {
+        "id": "SC-IN-07",
+        "item": "Officer lookup by plate and jurisdiction.",
+        "citations": [
+          "BRD §5",
+          "BRD §6.11"
+        ]
+      },
+      {
+        "id": "SC-IN-08",
+        "item": "Email at submission, rejection, and issuance.",
+        "citations": [
+          "BRD §5",
+          "BRD §6.9"
+        ]
+      },
+      {
+        "id": "SC-IN-09",
+        "item": "Monthly totals by zone, which the sponsor allows to slip to the next increment.",
+        "citations": [
+          "BRD §3",
+          "BRD §5",
+          "BRD §6.14"
+        ]
+      }
+    ],
+    "outOfScope": [
+      {
+        "id": "SC-OUT-01",
+        "item": "Visitor permits, temporary permits, and commercial permits.",
+        "priority": "Won't",
+        "rationale": "The sponsor said these are not this project (BRD §5).",
+        "citations": [
+          "BRD §5"
+        ]
+      },
+      {
+        "id": "SC-OUT-02",
+        "item": "Writing citations and taking appeals.",
+        "priority": "Won't",
+        "rationale": "The handheld already does citations. The sponsor excluded appeals (BRD §5).",
+        "citations": [
+          "BRD §5"
+        ]
+      },
+      {
+        "id": "SC-OUT-03",
+        "item": "Paying a parking meter.",
+        "priority": "Won't",
+        "rationale": "The sponsor excluded meter payment (BRD §5).",
+        "citations": [
+          "BRD §5"
+        ]
+      },
+      {
+        "id": "SC-OUT-04",
+        "item": "Electric-vehicle-only bays.",
+        "priority": "Won't",
+        "rationale": "The sponsor said this is not decided and told the project to leave it out until she says otherwise (BRD §5).",
+        "citations": [
+          "BRD §5"
+        ]
+      },
+      {
+        "id": "SC-OUT-05",
+        "item": "A clerk override that approves an address which is not on the eligible-address list.",
+        "priority": "Won't",
+        "rationale": "The sponsor said not to build an override until she decides (BRD §5).",
+        "citations": [
+          "BRD §5"
+        ]
+      },
+      {
+        "id": "SC-OUT-06",
+        "item": "A household cap on how many Active permits one household may hold.",
+        "priority": "Won't",
+        "rationale": "The sponsor said the policy is unwritten and not to pick a number (BRD §5). The unanswered policy is also OQ-001, so design does not invent a cap while this baseline excludes one.",
+        "citations": [
+          "BRD §5",
+          "BRD §9"
+        ]
+      },
+      {
+        "id": "SC-OUT-07",
+        "item": "Renewal after the expiry date, including any grace period.",
+        "priority": "Won't",
+        "rationale": "The sponsor limited renewal to the window in BRD §6.7 and said this project does not include a renewal after expiry (BRD §5).",
+        "citations": [
+          "BRD §5",
+          "BRD §6.7"
+        ]
+      }
+    ],
+    "assumptions": [],
+    "dependencies": [
+      {
+        "id": "DEP-001",
+        "statement": "CityPay hosts the card page and, on success, reports a payment reference and the amount paid.",
+        "citations": [
+          "BRD §6.6"
+        ]
+      },
+      {
+        "id": "DEP-002",
+        "statement": "CityNotify is the mail relay used for the submission, rejection, and issuance emails.",
+        "citations": [
+          "BRD §6.9"
+        ]
+      },
+      {
+        "id": "DEP-003",
+        "statement": "The city single sign-on can assert the group parking-clerk for a clerk.",
+        "citations": [
+          "BRD §6.10"
+        ]
+      },
+      {
+        "id": "DEP-004",
+        "statement": "Parking Services supplies the cleaned eligible-address list for each zone.",
+        "citations": [
+          "BRD §6.3"
+        ]
+      },
+      {
+        "id": "DEP-005",
+        "statement": "The handheld team will call the lookup. They will specify representation in design.",
+        "citations": [
+          "BRD §6.10"
+        ]
+      }
+    ],
+    "constraints": [
+      {
+        "id": "CON-001",
+        "statement": "Do not add fuzzy matching. Compare the entered street address to the cleaned list.",
+        "citations": [
+          "BRD §6.3"
+        ]
+      },
+      {
+        "id": "CON-002",
+        "statement": "Do not store the card number or the card security code. Collect them only on the CityPay page.",
+        "citations": [
+          "BRD §6.12"
+        ]
+      },
+      {
+        "id": "CON-003",
+        "statement": "Do not invent the handheld wire format. Representation is a design decision constrained by the lookup business content.",
+        "citations": [
+          "BRD §6.10"
+        ]
+      },
+      {
+        "id": "CON-004",
+        "statement": "A zone fee and the eligible-address list must be changeable without a software release.",
+        "citations": [
+          "BRD §6.2"
+        ]
+      },
+      {
+        "id": "CON-005",
+        "statement": "Submission time and audit time are recorded in UTC.",
+        "citations": [
+          "BRD §6.6",
+          "BRD §6.13"
+        ]
+      }
+    ]
+  },
+  "requirements": [
+    {
+      "id": "FR-001",
+      "type": "functional",
+      "statement": "The portal shall record, on one application by an authenticated resident, a legal name, a residential street address, an email address, one license plate, and that plate's jurisdiction.",
+      "priority": "Must",
+      "priorityRationale": "The sponsor stated this as behavior of this request, not as an optional later increment. BRD §6.1.",
+      "source": {
+        "needIds": [
+          "NEED-001"
+        ],
+        "citations": [
+          "BRD §6.1"
+        ],
+        "stakeholderIds": [
+          "STK-001"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AC-FR-001-01",
+          "title": "One application holds the sourced fields and one plate",
+          "gherkin": "Given an authenticated resident\nWhen the resident records a legal name, a residential street address, an email address, one license plate, and a jurisdiction on an application\nThen the application contains those values\nAnd the application does not contain a second license plate"
+        },
+        {
+          "id": "AC-FR-001-02",
+          "title": "A missing jurisdiction is not a complete application",
+          "gherkin": "Given an authenticated resident who has not recorded a jurisdiction\nWhen the resident tries to treat the application as complete\nThen the portal does not treat the application as containing the required set of fields"
+        }
+      ],
+      "status": "proposed",
+      "rationale": "BRD §6.1 treats these fields as the contents of one application, so they stay one completeness rule. A second plate, a household limit, and guest permits are not added: the first is contrary to this rule, and the others are SC-OUT-06, OQ-001, and SC-OUT-01.",
+      "verificationMethod": "test",
+      "useCaseIds": [
+        "UC-001"
+      ],
+      "userStoryIds": [
+        "US-001"
+      ]
+    },
+    {
+      "id": "FR-002",
+      "type": "functional",
+      "statement": "The portal shall refuse submission of an application whose residential street address is not on the eligible-address list Parking Services supplied for that application's zone.",
+      "priority": "Must",
+      "priorityRationale": "The sponsor stated this as behavior of this request, not as an optional later increment. BRD §6.3.",
+      "source": {
+        "needIds": [
+          "NEED-001"
+        ],
+        "citations": [
+          "BRD §6.3"
+        ],
+        "stakeholderIds": [
+          "STK-001"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AC-FR-002-01",
+          "title": "Sponsor's own example address is refused",
+          "gherkin": "Given the eligible-address list for zone R-A contains 100 Market Street\nAnd that list does not contain 9 Dock Lane\nWhen a resident tries to submit an application for zone R-A at 9 Dock Lane\nThen the portal refuses submission\nAnd the application does not become Submitted"
+        },
+        {
+          "id": "AC-FR-002-02",
+          "title": "An address on the list is not refused by this rule",
+          "gherkin": "Given the eligible-address list for zone R-A contains 100 Market Street\nWhen a resident submits an otherwise complete application for zone R-A at 100 Market Street\nThen this address rule does not refuse the submission"
+        }
+      ],
+      "status": "proposed",
+      "rationale": "The comparison is against the cleaned list the sponsor will supply. Fuzzy matching is forbidden by CON-001. A clerk override is SC-OUT-05. Which upstream system produces the list is OQ-002 and is not decided here.",
+      "verificationMethod": "test",
+      "useCaseIds": [
+        "UC-001"
+      ],
+      "userStoryIds": [
+        "US-002"
+      ]
+    },
+    {
+      "id": "FR-003",
+      "type": "functional",
+      "statement": "The portal shall accept submission only when the application has exactly one proof-of-address file whose media type is PDF, JPEG, or PNG and whose size is no greater than 10 megabytes.",
+      "priority": "Must",
+      "priorityRationale": "The sponsor stated this as behavior of this request, not as an optional later increment. BRD §6.4.",
+      "source": {
+        "needIds": [
+          "NEED-001",
+          "NEED-007"
+        ],
+        "citations": [
+          "BRD §6.4"
+        ],
+        "stakeholderIds": [
+          "STK-001",
+          "STK-002"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AC-FR-003-01",
+          "title": "One PNG at the stated cap satisfies the file rule",
+          "gherkin": "Given an application with no proof-of-address file yet\nWhen the resident attaches one PNG file of 10 megabytes\nThen the file rule is satisfied for that application"
+        },
+        {
+          "id": "AC-FR-003-02",
+          "title": "A file over the cap is refused",
+          "gherkin": "Given an application\nWhen the resident attaches one PNG file larger than 10 megabytes\nThen the portal does not accept submission on the strength of that file"
+        },
+        {
+          "id": "AC-FR-003-03",
+          "title": "A second file is refused",
+          "gherkin": "Given an application that already has one PDF proof-of-address file\nWhen the resident attaches a second file\nThen the portal does not accept submission with two proof-of-address files"
+        }
+      ],
+      "status": "proposed",
+      "rationale": "The file rule is the sponsor's list and size cap. Who may later retrieve the file is NFR-005. How long the file is kept is OQ-003 and is not given a period here.",
+      "verificationMethod": "test",
+      "useCaseIds": [
+        "UC-001"
+      ],
+      "userStoryIds": [
+        "US-003"
+      ]
+    },
+    {
+      "id": "FR-004",
+      "type": "functional",
+      "statement": "The portal shall record an accepted submission as status Submitted, with the submission time in UTC, on the clerk review queue.",
+      "priority": "Must",
+      "priorityRationale": "The sponsor stated this as behavior of this request, not as an optional later increment. BRD §6.6.",
+      "source": {
+        "needIds": [
+          "NEED-001"
+        ],
+        "citations": [
+          "BRD §6.6"
+        ],
+        "stakeholderIds": [
+          "STK-001",
+          "STK-002"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AC-FR-004-01",
+          "title": "A passing submission joins the queue",
+          "gherkin": "Given an application that has passed the address rule and the file rule\nWhen the resident submits it\nThen the status is Submitted\nAnd the submission time is recorded in UTC\nAnd the application is on the clerk review queue"
+        }
+      ],
+      "status": "proposed",
+      "rationale": "Accepted means the address rule and the file rule already passed. Draft applications are not on the queue, which is the sponsor's state model in BRD §6.6, not an extra workflow.",
+      "verificationMethod": "test",
+      "useCaseIds": [
+        "UC-001"
+      ]
+    },
+    {
+      "id": "FR-005",
+      "type": "functional",
+      "statement": "The portal shall let a user in the parking-clerk role change an application from status Submitted to status Approved.",
+      "priority": "Must",
+      "priorityRationale": "The sponsor stated this as behavior of this request, not as an optional later increment. BRD §6.6.",
+      "source": {
+        "needIds": [
+          "NEED-001"
+        ],
+        "citations": [
+          "BRD §6.6"
+        ],
+        "stakeholderIds": [
+          "STK-002"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AC-FR-005-01",
+          "title": "A clerk approves a submitted application",
+          "gherkin": "Given a user in the parking-clerk role\nAnd an application in status Submitted\nWhen the clerk approves it\nThen the application status is Approved"
+        },
+        {
+          "id": "AC-FR-005-02",
+          "title": "A draft is not approved from the queue",
+          "gherkin": "Given a user in the parking-clerk role\nAnd an application in status Draft\nWhen the clerk looks for it on the review queue\nThen the application is not on the queue and is not changed to Approved"
+        }
+      ],
+      "status": "proposed",
+      "rationale": "Approval is a clerk action on a Submitted application. The sponsor did not define a clerk override for an address off the list, so this statement does not add one (SC-OUT-05).",
+      "verificationMethod": "test",
+      "useCaseIds": [
+        "UC-002"
+      ],
+      "userStoryIds": [
+        "US-004"
+      ]
+    },
+    {
+      "id": "FR-006",
+      "type": "functional",
+      "statement": "The portal shall let a user in the parking-clerk role change an application from status Submitted to status Rejected only when that user supplies a reason at least 15 characters long.",
+      "priority": "Must",
+      "priorityRationale": "The sponsor stated this as behavior of this request, not as an optional later increment. BRD §6.5.",
+      "source": {
+        "needIds": [
+          "NEED-001"
+        ],
+        "citations": [
+          "BRD §6.5"
+        ],
+        "stakeholderIds": [
+          "STK-002"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AC-FR-006-01",
+          "title": "Fifteen characters rejects",
+          "gherkin": "Given a user in the parking-clerk role\nAnd an application in status Submitted\nWhen the clerk rejects it with a reason of 15 characters\nThen the application status is Rejected\nAnd the reason is retained"
+        },
+        {
+          "id": "AC-FR-006-02",
+          "title": "Fourteen characters does not reject",
+          "gherkin": "Given a user in the parking-clerk role\nAnd an application in status Submitted\nWhen the clerk tries to reject it with a reason of 14 characters\nThen the application status remains Submitted"
+        }
+      ],
+      "status": "proposed",
+      "rationale": "The 15-character floor is the sponsor's work rule. A shorter reason leaves the application Submitted, which BRD §6.5 states directly.",
+      "verificationMethod": "test",
+      "useCaseIds": [
+        "UC-002"
+      ],
+      "userStoryIds": [
+        "US-004"
+      ]
+    },
+    {
+      "id": "FR-007",
+      "type": "functional",
+      "statement": "The portal shall show the current ordinance fee for the application's zone, in US dollars, immediately before the resident is sent to pay.",
+      "priority": "Must",
+      "priorityRationale": "The sponsor stated this as behavior of this request, not as an optional later increment. BRD §6.2.",
+      "source": {
+        "needIds": [
+          "NEED-002"
+        ],
+        "citations": [
+          "BRD §6.2"
+        ],
+        "stakeholderIds": [
+          "STK-001"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AC-FR-007-01",
+          "title": "The shown amount is the current zone fee",
+          "gherkin": "Given the current fee for zone R-A is 60 US dollars\nAnd the current fee for zone R-B is 90 US dollars\nWhen the resident is about to be sent to pay an Approved application for zone R-B\nThen the portal shows 90 US dollars\nAnd the resident has not yet been sent to CityPay"
+        }
+      ],
+      "status": "proposed",
+      "rationale": "The fee is the current card amount at the moment of handoff, not a copy frozen at submission, because BRD §6.2 says the amount shown and the amount sent are the current fee at that moment. The card values are data, not hard-coded shall text, so an ordinance change does not require a new requirement.",
+      "verificationMethod": "test",
+      "useCaseIds": [
+        "UC-003",
+        "UC-004"
+      ],
+      "userStoryIds": [
+        "US-005"
+      ]
+    },
+    {
+      "id": "FR-008",
+      "type": "functional",
+      "statement": "The portal shall send the resident to the CityPay hosted page for an application only when that application is Approved.",
+      "priority": "Must",
+      "priorityRationale": "The sponsor stated this as behavior of this request, not as an optional later increment. BRD §6.6.",
+      "source": {
+        "needIds": [
+          "NEED-002"
+        ],
+        "citations": [
+          "BRD §6.6"
+        ],
+        "stakeholderIds": [
+          "STK-001"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AC-FR-008-01",
+          "title": "An approved application can be handed to CityPay",
+          "gherkin": "Given an application in status Approved\nWhen the resident continues to payment\nThen the portal sends the resident to the CityPay hosted page for that application"
+        },
+        {
+          "id": "AC-FR-008-02",
+          "title": "A submitted application is not handed to CityPay",
+          "gherkin": "Given an application in status Submitted\nWhen the resident tries to pay\nThen the portal does not send the resident to the CityPay hosted page"
+        }
+      ],
+      "status": "proposed",
+      "rationale": "Payment before approval is excluded by the sponsor's sequence. Card capture itself is NFR-006 and stays on CityPay's page.",
+      "verificationMethod": "test",
+      "useCaseIds": [
+        "UC-003",
+        "UC-004"
+      ],
+      "userStoryIds": [
+        "US-005"
+      ]
+    },
+    {
+      "id": "FR-009",
+      "type": "functional",
+      "statement": "The portal shall record the CityPay payment reference and the amount CityPay reported when CityPay reports that the fee was paid successfully.",
+      "priority": "Must",
+      "priorityRationale": "The sponsor stated this as behavior of this request, not as an optional later increment. BRD §6.6.",
+      "source": {
+        "needIds": [
+          "NEED-002",
+          "NEED-007"
+        ],
+        "citations": [
+          "BRD §6.6",
+          "BRD §6.12"
+        ],
+        "stakeholderIds": [
+          "STK-001",
+          "STK-004"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AC-FR-009-01",
+          "title": "A success report is stored",
+          "gherkin": "Given an Approved application whose current fee was shown as 60 US dollars\nWhen CityPay reports success with a payment reference and an amount of 60 US dollars\nThen the portal records that reference and that amount against the application"
+        },
+        {
+          "id": "AC-FR-009-02",
+          "title": "No success report means no successful payment",
+          "gherkin": "Given an Approved application\nWhen CityPay has not reported success\nThen the portal has no successful payment recorded for that application"
+        }
+      ],
+      "status": "proposed",
+      "rationale": "The portal records the reference and the amount the processor reports. It does not record the card number. Absence of a success report is not turned into a success by a timeout the sponsor did not state.",
+      "verificationMethod": "test",
+      "useCaseIds": [
+        "UC-003",
+        "UC-004"
+      ],
+      "userStoryIds": [
+        "US-005"
+      ]
+    },
+    {
+      "id": "FR-010",
+      "type": "functional",
+      "statement": "The portal shall issue a new permit in status Active, with a permit number the portal has not issued before and with an expiry date 365 days after the issue date, only when the linked application is Approved and a successful CityPay payment is recorded for it.",
+      "priority": "Must",
+      "priorityRationale": "The sponsor stated this as behavior of this request, not as an optional later increment. BRD §6.6.",
+      "source": {
+        "needIds": [
+          "NEED-001",
+          "NEED-002"
+        ],
+        "citations": [
+          "BRD §6.6",
+          "BRD §6.7"
+        ],
+        "stakeholderIds": [
+          "STK-001"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AC-FR-010-01",
+          "title": "Approval plus payment issues a new Active permit",
+          "gherkin": "Given an Approved application with a successful CityPay payment recorded\nWhen the portal issues the permit\nThen the new permit is Active\nAnd its permit number has not been issued before\nAnd its expiry date is 365 days after its issue date"
+        },
+        {
+          "id": "AC-FR-010-02",
+          "title": "Approval without payment does not issue",
+          "gherkin": "Given an Approved application with no successful CityPay payment recorded\nWhen issuance is considered\nThen the portal does not create an Active permit for that application"
+        }
+      ],
+      "status": "proposed",
+      "rationale": "Issuance is the same gate for a first application and for a renewal. BRD §6.7 says a renewal issues a new permit and leaves the previous permit unchanged. This statement does not shorten the previous permit and does not add a grace period (SC-OUT-07).",
+      "verificationMethod": "test",
+      "useCaseIds": [
+        "UC-003",
+        "UC-004"
+      ],
+      "userStoryIds": [
+        "US-006"
+      ]
+    },
+    {
+      "id": "FR-011",
+      "type": "functional",
+      "statement": "The portal shall send one email through CityNotify to the application's email address when the application becomes Submitted, when it becomes Rejected, and when a permit is issued for it.",
+      "priority": "Must",
+      "priorityRationale": "The sponsor stated this as behavior of this request, not as an optional later increment. BRD §6.9.",
+      "source": {
+        "needIds": [
+          "NEED-001"
+        ],
+        "citations": [
+          "BRD §6.9"
+        ],
+        "stakeholderIds": [
+          "STK-001"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AC-FR-011-01",
+          "title": "Submission sends one email",
+          "gherkin": "Given an application that has just become Submitted\nWhen the portal sends the submission notice\nThen one email is sent through CityNotify to the email address on the application"
+        },
+        {
+          "id": "AC-FR-011-02",
+          "title": "Rejection sends one email",
+          "gherkin": "Given an application that has just become Rejected\nWhen the portal sends the rejection notice\nThen one email is sent through CityNotify to the email address on the application"
+        },
+        {
+          "id": "AC-FR-011-03",
+          "title": "Issuance sends one email",
+          "gherkin": "Given a permit that has just been issued for an application\nWhen the portal sends the issuance notice\nThen one email is sent through CityNotify to the email address on the application"
+        }
+      ],
+      "status": "proposed",
+      "rationale": "The three events are the sponsor's list. The one-time sign-in link is a different send (FR-017). The source does not say that link uses CityNotify, so this statement does not attach it. That channel is OQ-007.",
+      "verificationMethod": "test",
+      "useCaseIds": [
+        "UC-003"
+      ],
+      "userStoryIds": [
+        "US-007"
+      ]
+    },
+    {
+      "id": "FR-012",
+      "type": "functional",
+      "statement": "The portal shall record a failed CityNotify attempt, stop after 3 attempts for that event, and leave the application or permit status unchanged when CityNotify does not accept the message.",
+      "priority": "Must",
+      "priorityRationale": "The sponsor stated this as behavior of this request, not as an optional later increment. BRD §6.9.",
+      "source": {
+        "needIds": [
+          "NEED-001"
+        ],
+        "citations": [
+          "BRD §6.9"
+        ],
+        "stakeholderIds": [
+          "STK-001"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AC-FR-012-01",
+          "title": "A refused message does not undo issuance",
+          "gherkin": "Given a permit that has just been issued\nWhen CityNotify does not accept the issuance message\nThen the portal records the failed attempt\nAnd the permit remains issued"
+        },
+        {
+          "id": "AC-FR-012-02",
+          "title": "Attempts stop at three",
+          "gherkin": "Given an event whose CityNotify message has already failed 3 times\nWhen the portal considers another attempt for that same event\nThen the portal does not send a fourth attempt"
+        }
+      ],
+      "status": "proposed",
+      "rationale": "BRD §6.9 binds the record, the cap of 3, and the refusal to undo the business action as one failure behavior. Clerks phoning the resident is outside the product and is not turned into a shall.",
+      "verificationMethod": "test"
+    },
+    {
+      "id": "FR-013",
+      "type": "functional",
+      "statement": "The portal shall let a resident authenticated with the email address on an Active permit start a renewal application on or after the date 45 days before that permit's expiry date and on or before that expiry date, prefilled with that permit's legal name, residential street address, license plate, and jurisdiction.",
+      "priority": "Must",
+      "priorityRationale": "The sponsor stated this as behavior of this request, not as an optional later increment. BRD §6.7.",
+      "source": {
+        "needIds": [
+          "NEED-004"
+        ],
+        "citations": [
+          "BRD §6.7"
+        ],
+        "stakeholderIds": [
+          "STK-001"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AC-FR-013-01",
+          "title": "The window opens on day 45 and prefills the four fields",
+          "gherkin": "Given an Active permit whose expiry date is 45 days after the current date\nAnd a resident authenticated with the email address on that permit\nWhen the resident starts a renewal\nThen the portal creates a renewal application\nAnd that application is prefilled with that permit's legal name, residential street address, license plate, and jurisdiction"
+        },
+        {
+          "id": "AC-FR-013-02",
+          "title": "A day earlier than the window does not start a renewal",
+          "gherkin": "Given an Active permit whose expiry date is 46 days after the current date\nAnd a resident authenticated with the email address on that permit\nWhen the resident tries to start a renewal\nThen the portal does not create a renewal application"
+        }
+      ],
+      "status": "proposed",
+      "rationale": "The window bounds are the sponsor's, inclusive of day 45 and of the expiry date. A different email cannot start that renewal. After expiry is SC-OUT-07, not a late-renewal shall.",
+      "verificationMethod": "test",
+      "useCaseIds": [
+        "UC-004"
+      ],
+      "userStoryIds": [
+        "US-008"
+      ]
+    },
+    {
+      "id": "FR-014",
+      "type": "functional",
+      "statement": "The portal shall change a permit from Active to Suspended or from Active to Revoked only when a user in the parking-clerk role records a reason code of eligibility-lapsed, non-payment, fraud, or other.",
+      "priority": "Must",
+      "priorityRationale": "The sponsor stated this as behavior of this request, not as an optional later increment. BRD §6.8.",
+      "source": {
+        "needIds": [
+          "NEED-005"
+        ],
+        "citations": [
+          "BRD §6.8"
+        ],
+        "stakeholderIds": [
+          "STK-002"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AC-FR-014-01",
+          "title": "A listed reason code suspends",
+          "gherkin": "Given a user in the parking-clerk role\nAnd a permit in status Active\nWhen the clerk suspends it with reason code eligibility-lapsed\nThen the permit status is Suspended\nAnd the reason code is retained"
+        },
+        {
+          "id": "AC-FR-014-02",
+          "title": "A missing reason code does not revoke",
+          "gherkin": "Given a user in the parking-clerk role\nAnd a permit in status Active\nWhen the clerk tries to revoke it without a reason code\nThen the permit status remains Active"
+        }
+      ],
+      "status": "proposed",
+      "rationale": "The four reason codes are the sponsor's closed list. Lookup consequences are FR-015, not a second copy of this decision.",
+      "verificationMethod": "test",
+      "useCaseIds": [
+        "UC-006"
+      ],
+      "userStoryIds": [
+        "US-009"
+      ]
+    },
+    {
+      "id": "FR-015",
+      "type": "functional",
+      "statement": "The portal shall report a lookup status of Active only when the matched permit is stored as Active and the lookup date is on or before that permit's expiry date.",
+      "priority": "Must",
+      "priorityRationale": "The sponsor stated this as behavior of this request, not as an optional later increment. BRD §6.8.",
+      "source": {
+        "needIds": [
+          "NEED-003",
+          "NEED-005"
+        ],
+        "citations": [
+          "BRD §6.8",
+          "BRD §6.11"
+        ],
+        "stakeholderIds": [
+          "STK-003"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AC-FR-015-01",
+          "title": "A current Active permit is reported Active",
+          "gherkin": "Given a permit stored as Active whose expiry date is on or after the lookup date\nWhen a plate lookup matches that permit\nThen the reported status is Active"
+        },
+        {
+          "id": "AC-FR-015-02",
+          "title": "Suspended, revoked, and past expiry are not Active",
+          "gherkin": "Given a plate lookup that matches a permit stored as Suspended\nWhen the same kind of lookup is repeated for a permit stored as Revoked and for a permit whose expiry date is before the lookup date\nThen none of those three results reports status Active"
+        }
+      ],
+      "status": "proposed",
+      "rationale": "Suspended, Revoked, a date after expiry, and not-found are all outside Active, by BRD §6.8 and §6.11. The statement does not invent a stored status called Expired. The report counts expiry dates separately (FR-016).",
+      "verificationMethod": "test",
+      "useCaseIds": [
+        "UC-005",
+        "UC-006"
+      ],
+      "userStoryIds": [
+        "US-009"
+      ]
+    },
+    {
+      "id": "FR-016",
+      "type": "functional",
+      "statement": "The portal shall produce, for a calendar month it is given, the count of permits whose issue date falls in that month, the count of permits whose expiry date falls in that month, and the sum of successful CityPay amounts recorded in that month, each grouped by zone.",
+      "priority": "Should",
+      "priorityRationale": "BRD §3 says the sponsor will still open the service to residents if the monthly totals slip to the next increment.",
+      "source": {
+        "needIds": [
+          "NEED-008"
+        ],
+        "citations": [
+          "BRD §3",
+          "BRD §6.14"
+        ],
+        "stakeholderIds": [
+          "STK-007"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AC-FR-016-01",
+          "title": "Fixture records roll up by the stated definitions",
+          "gherkin": "Given a calendar month in which zone R-A has one permit with an issue date in the month, one permit with an expiry date in the month, and successful CityPay payments totaling 60 US dollars\nAnd zone R-B has none of those\nWhen the figures for that month are produced\nThen zone R-A shows 1 issued, 1 expired, and 60 US dollars\nAnd zone R-B shows 0 issued, 0 expired, and 0 US dollars"
+        }
+      ],
+      "status": "proposed",
+      "rationale": "The three aggregations are defined by BRD §6.14. Who is allowed to request the report is OQ-006, so this statement names no role. Priority is Should because the sponsor will open the resident service even if the report slips.",
+      "verificationMethod": "test",
+      "userStoryIds": [
+        "US-011"
+      ]
+    },
+    {
+      "id": "FR-017",
+      "type": "functional",
+      "statement": "The portal shall start a resident session only after the resident opens a one-time link that the portal sent to the email address the resident entered.",
+      "priority": "Must",
+      "priorityRationale": "The sponsor stated this as behavior of this request, not as an optional later increment. BRD §6.10.",
+      "source": {
+        "needIds": [
+          "NEED-009"
+        ],
+        "citations": [
+          "BRD §6.10"
+        ],
+        "stakeholderIds": [
+          "STK-001"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AC-FR-017-01",
+          "title": "The link starts a session",
+          "gherkin": "Given a resident who entered an email address\nAnd a one-time link the portal sent to that address\nWhen the resident opens the link\nThen the portal starts a resident session for that email address"
+        },
+        {
+          "id": "AC-FR-017-02",
+          "title": "No link means no session",
+          "gherkin": "Given a resident who entered an email address\nWhen the resident has not opened a one-time link sent to that address\nThen the portal does not start a resident session"
+        }
+      ],
+      "status": "proposed",
+      "rationale": "The sponsor forbade a city password for residents. The channel that carries the link is not named and is OQ-007. This statement does not assume CityNotify.",
+      "verificationMethod": "test",
+      "useCaseIds": [
+        "UC-001"
+      ]
+    },
+    {
+      "id": "FR-018",
+      "type": "functional",
+      "statement": "The portal shall start a parking-clerk session only when a city single sign-on asserts the group parking-clerk.",
+      "priority": "Must",
+      "priorityRationale": "The sponsor stated this as behavior of this request, not as an optional later increment. BRD §6.10.",
+      "source": {
+        "needIds": [
+          "NEED-010"
+        ],
+        "citations": [
+          "BRD §6.10"
+        ],
+        "stakeholderIds": [
+          "STK-002"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AC-FR-018-01",
+          "title": "The group starts a clerk session",
+          "gherkin": "Given a city single sign-on that asserts the group parking-clerk\nWhen the portal establishes the session\nThen the session is a parking-clerk session"
+        },
+        {
+          "id": "AC-FR-018-02",
+          "title": "A sign-on without the group does not start a clerk session",
+          "gherkin": "Given a city single sign-on that does not assert the group parking-clerk\nWhen the portal considers a clerk session\nThen the portal does not start a parking-clerk session"
+        }
+      ],
+      "status": "proposed",
+      "rationale": "The group claim is the sponsor's rule. Token format and protocol are not specified and stay deferred to design under CON-003's sibling constraint for representation, recorded on IF-004.",
+      "verificationMethod": "test",
+      "useCaseIds": [
+        "UC-002"
+      ]
+    },
+    {
+      "id": "FR-019",
+      "type": "functional",
+      "statement": "The portal shall answer a plate-and-jurisdiction lookup with the matching permit's zone, status, and expiry date, or with a not-found result when no permit matches that plate and jurisdiction.",
+      "priority": "Must",
+      "priorityRationale": "The sponsor stated this as behavior of this request, not as an optional later increment. BRD §6.11.",
+      "source": {
+        "needIds": [
+          "NEED-003"
+        ],
+        "citations": [
+          "BRD §6.11"
+        ],
+        "stakeholderIds": [
+          "STK-003"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AC-FR-019-01",
+          "title": "A matching plate returns zone, status, and expiry",
+          "gherkin": "Given a permit for plate ABC123 in a jurisdiction, with a zone and an expiry date\nWhen a lookup asks for plate ABC123 and that jurisdiction\nThen the result contains that zone, the permit status, and that expiry date"
+        },
+        {
+          "id": "AC-FR-019-02",
+          "title": "An unknown plate is not-found",
+          "gherkin": "Given no permit for plate ZZZ999 and the requested jurisdiction\nWhen a lookup asks for that plate and jurisdiction\nThen the result is not-found\nAnd the result is not an Active permit"
+        }
+      ],
+      "status": "proposed",
+      "rationale": "The response business content is fixed here. The wire format is deferred to design (CON-003, IF-003). Not-found is a normal result, not an error code invented by this specification.",
+      "verificationMethod": "test",
+      "useCaseIds": [
+        "UC-005"
+      ],
+      "userStoryIds": [
+        "US-010"
+      ]
+    },
+    {
+      "id": "FR-020",
+      "type": "functional",
+      "statement": "The portal shall omit the resident's legal name, residential street address, email address, and proof-of-address file from every plate-lookup response.",
+      "priority": "Must",
+      "priorityRationale": "The sponsor stated this as behavior of this request, not as an optional later increment. BRD §6.4.",
+      "source": {
+        "needIds": [
+          "NEED-003",
+          "NEED-007"
+        ],
+        "citations": [
+          "BRD §6.4",
+          "BRD §6.11"
+        ],
+        "stakeholderIds": [
+          "STK-003",
+          "STK-001"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AC-FR-020-01",
+          "title": "A hit omits personal details and the file",
+          "gherkin": "Given a permit that matches the requested plate and jurisdiction\nWhen the lookup response is returned\nThen the response does not contain the resident's legal name, residential street address, email address, or proof-of-address file"
+        }
+      ],
+      "status": "proposed",
+      "rationale": "This is the sponsor's replacement for the office reading personal details over the phone. It does not prescribe encryption or a token scheme.",
+      "verificationMethod": "test",
+      "useCaseIds": [
+        "UC-005"
+      ],
+      "userStoryIds": [
+        "US-010"
+      ]
+    },
+    {
+      "id": "NFR-001",
+      "type": "non-functional",
+      "statement": "The portal shall return a plate-lookup response within 2 seconds for at least 95 percent of lookups when 50 authenticated lookup clients call the lookup at the same time.",
+      "priority": "Must",
+      "priorityRationale": "The sponsor stated this as behavior of this request, not as an optional later increment. BRD §6.11.",
+      "source": {
+        "needIds": [
+          "NEED-003"
+        ],
+        "citations": [
+          "BRD §6.11"
+        ],
+        "stakeholderIds": [
+          "STK-003"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AC-NFR-001-01",
+          "title": "The sourced load meets the sourced time",
+          "gherkin": "Given 50 authenticated lookup clients calling the plate lookup at the same time\nWhen the responses are measured\nThen at least 95 percent of those responses are returned within 2 seconds"
+        }
+      ],
+      "status": "proposed",
+      "rationale": "Scale is lookup response time, the meter is the share of lookups observed at the portal under the stated concurrency, and the target is the captain's figure as Dana recorded it. No resident-page budget is copied from this number. That gap is OQ-004.",
+      "verificationMethod": "test",
+      "qualityAttribute": "performance-efficiency",
+      "qualitySubcharacteristic": "time-behaviour",
+      "useCaseIds": [
+        "UC-005"
+      ]
+    },
+    {
+      "id": "NFR-002",
+      "type": "non-functional",
+      "statement": "The portal shall let a resident complete application entry, proof-of-address upload, and the handoff to CityPay at a viewport width of 360 CSS pixels without horizontal scrolling.",
+      "priority": "Must",
+      "priorityRationale": "The sponsor stated this as behavior of this request, not as an optional later increment. BRD §7.",
+      "source": {
+        "needIds": [
+          "NEED-006"
+        ],
+        "citations": [
+          "BRD §7"
+        ],
+        "stakeholderIds": [
+          "STK-001"
+        ],
+        "policyIds": [
+          "POL-ACC-01"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AC-NFR-002-01",
+          "title": "The three named tasks fit the stated width",
+          "gherkin": "Given a viewport 360 CSS pixels wide\nWhen a resident completes application entry, proof-of-address upload, and the handoff to CityPay\nThen none of those tasks requires horizontal scrolling"
+        }
+      ],
+      "status": "proposed",
+      "rationale": "The width and the three tasks are what the sponsor stated from POL-ACC-01. No other breakpoint is added.",
+      "verificationMethod": "demonstration",
+      "qualityAttribute": "interaction-capability",
+      "qualitySubcharacteristic": "operability"
+    },
+    {
+      "id": "NFR-003",
+      "type": "non-functional",
+      "statement": "The portal shall conform the resident flows and the clerk flows to WCAG 2.2 Level AA.",
+      "priority": "Must",
+      "priorityRationale": "The sponsor stated this as behavior of this request, not as an optional later increment. BRD §7.",
+      "source": {
+        "needIds": [
+          "NEED-006"
+        ],
+        "citations": [
+          "BRD §7"
+        ],
+        "stakeholderIds": [
+          "STK-001",
+          "STK-002"
+        ],
+        "policyIds": [
+          "POL-ACC-01"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AC-NFR-003-01",
+          "title": "Named flows are inspected against the cited level",
+          "gherkin": "Given the resident flows and the clerk flows\nWhen those flows are inspected against WCAG 2.2 Level AA\nThen each flow conforms to that level"
+        }
+      ],
+      "status": "proposed",
+      "rationale": "The sponsor cited WCAG 2.2 Level AA for resident and clerk flows and did not attach the rest of POL-ACC-01. This shall is that citation, not a private selection of success criteria. The accessibility coordinator was not in the room and is not quoted.",
+      "verificationMethod": "inspection",
+      "qualityAttribute": "interaction-capability",
+      "qualitySubcharacteristic": "inclusivity"
+    },
+    {
+      "id": "NFR-004",
+      "type": "non-functional",
+      "statement": "The portal shall present the resident flows in the current major version and the immediately previous major version of Chrome, Firefox, Safari, and Edge.",
+      "priority": "Must",
+      "priorityRationale": "The sponsor stated this as behavior of this request, not as an optional later increment. BRD §7.",
+      "source": {
+        "needIds": [
+          "NEED-006"
+        ],
+        "citations": [
+          "BRD §7"
+        ],
+        "stakeholderIds": [
+          "STK-001"
+        ],
+        "policyIds": [
+          "POL-BROWSER-02"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AC-NFR-004-01",
+          "title": "Each named browser at both stated generations presents the resident flows",
+          "gherkin": "Given the current major version and the immediately previous major version of Chrome, Firefox, Safari, and Edge\nWhen a resident uses each of those versions for the resident flows\nThen the resident flows are presented in each of those versions"
+        }
+      ],
+      "status": "proposed",
+      "rationale": "POL-BROWSER-02 as the sponsor stated it. No other browser and no clerk-flow browser matrix is added, because the sponsor applied this policy to resident flows.",
+      "verificationMethod": "test",
+      "qualityAttribute": "flexibility",
+      "qualitySubcharacteristic": "adaptability"
+    },
+    {
+      "id": "NFR-005",
+      "type": "non-functional",
+      "statement": "The portal shall let a proof-of-address file be retrieved only by the resident who uploaded it and by a user in the parking-clerk role.",
+      "priority": "Must",
+      "priorityRationale": "The sponsor stated this as behavior of this request, not as an optional later increment. BRD §6.4.",
+      "source": {
+        "needIds": [
+          "NEED-007"
+        ],
+        "citations": [
+          "BRD §6.4"
+        ],
+        "stakeholderIds": [
+          "STK-001",
+          "STK-002"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AC-NFR-005-01",
+          "title": "Clerk and uploading resident can retrieve the file",
+          "gherkin": "Given a proof-of-address file uploaded by a resident\nWhen that resident retrieves it and a user in the parking-clerk role retrieves it\nThen both retrievals are allowed"
+        },
+        {
+          "id": "AC-NFR-005-02",
+          "title": "Another resident cannot retrieve the file",
+          "gherkin": "Given a proof-of-address file uploaded by one resident\nWhen a different resident tries to retrieve it\nThen the portal does not return the file"
+        }
+      ],
+      "status": "proposed",
+      "rationale": "The allowed people are the sponsor's list. The statement does not choose storage encryption, a document-management product, or a retention period (OQ-003).",
+      "verificationMethod": "test",
+      "qualityAttribute": "security",
+      "qualitySubcharacteristic": "confidentiality"
+    },
+    {
+      "id": "NFR-006",
+      "type": "non-functional",
+      "statement": "The portal shall keep payment card numbers and card security codes out of portal storage by collecting them only on the CityPay hosted page.",
+      "priority": "Must",
+      "priorityRationale": "The sponsor stated this as behavior of this request, not as an optional later increment. BRD §6.12.",
+      "source": {
+        "needIds": [
+          "NEED-002",
+          "NEED-007"
+        ],
+        "citations": [
+          "BRD §6.12",
+          "BRD §7"
+        ],
+        "stakeholderIds": [
+          "STK-001",
+          "STK-004"
+        ],
+        "policyIds": [
+          "POL-SEC-04"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AC-NFR-006-01",
+          "title": "Card entry is on CityPay and the values are not stored",
+          "gherkin": "Given a resident paying an Approved application\nWhen the resident enters a card number and a card security code\nThen that entry happens on the CityPay hosted page\nAnd the portal has not stored the card number or the card security code"
+        }
+      ],
+      "status": "proposed",
+      "rationale": "POL-SEC-04 as the sponsor applied it. No card-vault product and no cipher suite is named.",
+      "verificationMethod": "test",
+      "qualityAttribute": "security",
+      "qualitySubcharacteristic": "confidentiality"
+    },
+    {
+      "id": "NFR-007",
+      "type": "non-functional",
+      "statement": "The portal shall keep the resident flows and the plate lookup available for at least 99.5 percent of the minutes in each calendar month outside maintenance windows published at least 48 hours before they start.",
+      "priority": "Must",
+      "priorityRationale": "The sponsor stated this as behavior of this request, not as an optional later increment. BRD §7.",
+      "source": {
+        "needIds": [
+          "NEED-001",
+          "NEED-003"
+        ],
+        "citations": [
+          "BRD §7"
+        ],
+        "stakeholderIds": [
+          "STK-001",
+          "STK-003"
+        ],
+        "policyIds": [
+          "POL-AVAIL-03"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AC-NFR-007-01",
+          "title": "Monthly minutes meet the stated percentage",
+          "gherkin": "Given a calendar month and the maintenance windows that were published at least 48 hours before they started\nWhen available minutes of the resident flows and of the plate lookup are divided by the minutes in that month outside those windows\nThen the result is at least 99.5 percent"
+        }
+      ],
+      "status": "proposed",
+      "rationale": "The percentage, the month, the two surfaces, and the 48-hour notice are POL-AVAIL-03 as stated. Restore time after an unplanned outage is not in the policy sentence and is OQ-005.",
+      "verificationMethod": "analysis",
+      "qualityAttribute": "reliability",
+      "qualitySubcharacteristic": "availability"
+    },
+    {
+      "id": "NFR-008",
+      "type": "non-functional",
+      "statement": "The portal shall apply an update to a zone's current fee or to the eligible-address list without a software release.",
+      "priority": "Must",
+      "priorityRationale": "The sponsor stated this as behavior of this request, not as an optional later increment. BRD §6.2.",
+      "source": {
+        "needIds": [
+          "NEED-001",
+          "NEED-002"
+        ],
+        "citations": [
+          "BRD §6.2"
+        ],
+        "stakeholderIds": [
+          "STK-007"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AC-NFR-008-01",
+          "title": "A fee change is visible without a release",
+          "gherkin": "Given zone R-A has a current fee of 60 US dollars\nWhen that current fee is updated to 70 US dollars without a software release\nThen an Approved R-A application handed to payment after the update shows 70 US dollars"
+        },
+        {
+          "id": "AC-NFR-008-02",
+          "title": "An address-list change is applied without a release",
+          "gherkin": "Given 9 Dock Lane is not on the zone R-A eligible-address list\nWhen 9 Dock Lane is added to that list without a software release\nThen a later submission for zone R-A at 9 Dock Lane is not refused by the address rule"
+        }
+      ],
+      "status": "proposed",
+      "rationale": "The sponsor required ordinance changes to take effect without a release. Who types the update is not stated, so no editor role is added. Provenance of the address list remains OQ-002.",
+      "verificationMethod": "demonstration",
+      "qualityAttribute": "flexibility",
+      "qualitySubcharacteristic": "adaptability"
+    },
+    {
+      "id": "NFR-009",
+      "type": "non-functional",
+      "statement": "The portal shall append an audit record containing the actor, the time in UTC, and the reason or the payment reference for each approval, rejection, issuance, suspension, and revocation.",
+      "priority": "Must",
+      "priorityRationale": "The sponsor stated this as behavior of this request, not as an optional later increment. BRD §6.13.",
+      "source": {
+        "needIds": [
+          "NEED-005",
+          "NEED-007"
+        ],
+        "citations": [
+          "BRD §6.13"
+        ],
+        "stakeholderIds": [
+          "STK-002",
+          "STK-007"
+        ]
+      },
+      "acceptanceCriteria": [
+        {
+          "id": "AC-NFR-009-01",
+          "title": "A revocation writes the sourced audit fields",
+          "gherkin": "Given a user in the parking-clerk role\nWhen that user revokes an Active permit with reason code fraud\nThen an audit record is appended with that actor, the time in UTC, and the reason code"
+        },
+        {
+          "id": "AC-NFR-009-02",
+          "title": "Issuance records the payment reference",
+          "gherkin": "Given a successful CityPay payment reference on an Approved application\nWhen the portal issues the permit\nThen an audit record is appended with the actor, the time in UTC, and that payment reference"
+        }
+      ],
+      "status": "proposed",
+      "rationale": "The five actions and the three fields are the sponsor's audit rule. No log product is named.",
+      "verificationMethod": "test",
+      "qualityAttribute": "security",
+      "qualitySubcharacteristic": "accountability",
+      "useCaseIds": [
+        "UC-006"
+      ]
+    }
+  ],
+  "useCases": [
+    {
+      "id": "UC-001",
+      "name": "Apply for a residential permit",
+      "primaryActorId": "STK-001",
+      "level": "user-goal",
+      "preconditions": [
+        "A resident session has been started under FR-017."
+      ],
+      "trigger": "The resident starts an application.",
+      "mainSuccessScenario": [
+        {
+          "step": "The resident records the application fields and one plate.",
+          "requirementIds": [
+            "FR-001"
+          ]
+        },
+        {
+          "step": "The address is on the eligible-address list for the zone.",
+          "requirementIds": [
+            "FR-002"
+          ]
+        },
+        {
+          "step": "Exactly one allowed proof-of-address file is attached.",
+          "requirementIds": [
+            "FR-003"
+          ]
+        },
+        {
+          "step": "Submission is recorded as Submitted on the clerk queue.",
+          "requirementIds": [
+            "FR-004"
+          ]
+        }
+      ],
+      "extensions": [
+        {
+          "condition": "The address is not on the list for the zone.",
+          "behavior": "Submission is refused and the application does not become Submitted.",
+          "requirementIds": [
+            "FR-002"
+          ]
+        },
+        {
+          "condition": "The file is missing, is a second file, is the wrong media type, or is larger than 10 megabytes.",
+          "behavior": "Submission is not accepted.",
+          "requirementIds": [
+            "FR-003"
+          ]
+        }
+      ],
+      "requirementIds": [
+        "FR-001",
+        "FR-002",
+        "FR-003",
+        "FR-004",
+        "FR-017"
+      ]
+    },
+    {
+      "id": "UC-002",
+      "name": "Review an application",
+      "primaryActorId": "STK-002",
+      "level": "user-goal",
+      "preconditions": [
+        "A parking-clerk session has been started under FR-018."
+      ],
+      "trigger": "The clerk takes a Submitted application from the review queue.",
+      "mainSuccessScenario": [
+        {
+          "step": "The clerk changes the application from Submitted to Approved.",
+          "requirementIds": [
+            "FR-005"
+          ]
+        }
+      ],
+      "extensions": [
+        {
+          "condition": "The clerk rejects with a reason at least 15 characters long.",
+          "behavior": "The application becomes Rejected and the reason is kept.",
+          "requirementIds": [
+            "FR-006"
+          ]
+        },
+        {
+          "condition": "The reason is shorter than 15 characters.",
+          "behavior": "The application stays Submitted.",
+          "requirementIds": [
+            "FR-006"
+          ]
+        }
+      ],
+      "requirementIds": [
+        "FR-005",
+        "FR-006",
+        "FR-018"
+      ]
+    },
+    {
+      "id": "UC-003",
+      "name": "Pay and receive a permit",
+      "primaryActorId": "STK-001",
+      "level": "user-goal",
+      "preconditions": [
+        "The application is Approved."
+      ],
+      "trigger": "The resident continues an Approved application to payment.",
+      "mainSuccessScenario": [
+        {
+          "step": "The current zone fee is shown.",
+          "requirementIds": [
+            "FR-007"
+          ]
+        },
+        {
+          "step": "The resident is sent to the CityPay hosted page.",
+          "requirementIds": [
+            "FR-008"
+          ]
+        },
+        {
+          "step": "A successful CityPay report is recorded.",
+          "requirementIds": [
+            "FR-009"
+          ]
+        },
+        {
+          "step": "A new Active permit is issued.",
+          "requirementIds": [
+            "FR-010"
+          ]
+        },
+        {
+          "step": "An issuance email is sent through CityNotify.",
+          "requirementIds": [
+            "FR-011"
+          ]
+        }
+      ],
+      "extensions": [
+        {
+          "condition": "CityPay does not report success.",
+          "behavior": "No successful payment is recorded and no Active permit is issued.",
+          "requirementIds": [
+            "FR-009",
+            "FR-010"
+          ]
+        }
+      ],
+      "requirementIds": [
+        "FR-007",
+        "FR-008",
+        "FR-009",
+        "FR-010",
+        "FR-011"
+      ]
+    },
+    {
+      "id": "UC-004",
+      "name": "Renew a permit",
+      "primaryActorId": "STK-001",
+      "level": "user-goal",
+      "preconditions": [
+        "The resident is authenticated with the email address on the Active permit.",
+        "The current date is inside the renewal window."
+      ],
+      "trigger": "The resident starts a renewal.",
+      "mainSuccessScenario": [
+        {
+          "step": "A renewal application is created and prefilled from the current permit.",
+          "requirementIds": [
+            "FR-013"
+          ]
+        },
+        {
+          "step": "After approval, payment and issuance follow the same rules as a first application.",
+          "requirementIds": [
+            "FR-007",
+            "FR-008",
+            "FR-009",
+            "FR-010"
+          ]
+        }
+      ],
+      "extensions": [
+        {
+          "condition": "The current date is before the window.",
+          "behavior": "No renewal application is created.",
+          "requirementIds": [
+            "FR-013"
+          ]
+        }
+      ],
+      "requirementIds": [
+        "FR-007",
+        "FR-008",
+        "FR-009",
+        "FR-010",
+        "FR-013"
+      ]
+    },
+    {
+      "id": "UC-005",
+      "name": "Look up a plate",
+      "primaryActorId": "STK-003",
+      "level": "user-goal",
+      "preconditions": [
+        "The lookup is requested by an authenticated lookup client."
+      ],
+      "trigger": "A plate and jurisdiction are presented.",
+      "mainSuccessScenario": [
+        {
+          "step": "The response carries zone, status, and expiry, or not-found.",
+          "requirementIds": [
+            "FR-019"
+          ]
+        },
+        {
+          "step": "Active is reported only for a stored Active permit still inside its expiry date.",
+          "requirementIds": [
+            "FR-015"
+          ]
+        },
+        {
+          "step": "Personal details and the proof file are omitted.",
+          "requirementIds": [
+            "FR-020"
+          ]
+        }
+      ],
+      "extensions": [
+        {
+          "condition": "Nothing matches the plate and jurisdiction.",
+          "behavior": "The result is not-found and is not Active.",
+          "requirementIds": [
+            "FR-019"
+          ]
+        }
+      ],
+      "requirementIds": [
+        "FR-015",
+        "FR-019",
+        "FR-020",
+        "NFR-001"
+      ]
+    },
+    {
+      "id": "UC-006",
+      "name": "Suspend or revoke a permit",
+      "primaryActorId": "STK-002",
+      "level": "user-goal",
+      "preconditions": [
+        "A parking-clerk session has been started.",
+        "The permit is Active."
+      ],
+      "trigger": "The clerk records a reason code against the permit.",
+      "mainSuccessScenario": [
+        {
+          "step": "The permit becomes Suspended or Revoked and the reason code is kept.",
+          "requirementIds": [
+            "FR-014"
+          ]
+        },
+        {
+          "step": "An audit record is appended.",
+          "requirementIds": [
+            "NFR-009"
+          ]
+        }
+      ],
+      "extensions": [
+        {
+          "condition": "A later lookup matches that permit.",
+          "behavior": "The lookup does not report Active.",
+          "requirementIds": [
+            "FR-015"
+          ]
+        }
+      ],
+      "requirementIds": [
+        "FR-014",
+        "FR-015",
+        "NFR-009"
+      ]
+    }
+  ],
+  "userStories": [
+    {
+      "id": "US-001",
+      "asA": "resident",
+      "iWant": "to record one plate and the application fields on a single application",
+      "soThat": "I can ask for a street permit without queueing at the counter",
+      "requirementIds": [
+        "FR-001"
+      ]
+    },
+    {
+      "id": "US-002",
+      "asA": "resident",
+      "iWant": "submission refused when my street address is not on the zone list",
+      "soThat": "an ineligible address does not become a submitted application",
+      "requirementIds": [
+        "FR-002"
+      ]
+    },
+    {
+      "id": "US-003",
+      "asA": "resident",
+      "iWant": "to attach one proof-of-address file within the stated type and size limits",
+      "soThat": "the clerk can review the proof the sponsor required",
+      "requirementIds": [
+        "FR-003"
+      ]
+    },
+    {
+      "id": "US-004",
+      "asA": "parking clerk",
+      "iWant": "to approve a submitted application or reject it with a reason of at least 15 characters",
+      "soThat": "only a completed review moves the application on",
+      "requirementIds": [
+        "FR-005",
+        "FR-006"
+      ]
+    },
+    {
+      "id": "US-005",
+      "asA": "resident",
+      "iWant": "to see the current zone fee and be sent to CityPay only after approval",
+      "soThat": "I pay the ordinance amount through the city's processor",
+      "requirementIds": [
+        "FR-007",
+        "FR-008",
+        "FR-009"
+      ]
+    },
+    {
+      "id": "US-006",
+      "asA": "resident",
+      "iWant": "a new Active permit only after approval and a successful payment",
+      "soThat": "an officer can verify a permit that has actually been paid",
+      "requirementIds": [
+        "FR-010"
+      ]
+    },
+    {
+      "id": "US-007",
+      "asA": "resident",
+      "iWant": "an email through CityNotify when I submit, when I am rejected, and when a permit is issued",
+      "soThat": "I hear the outcomes the sponsor required",
+      "requirementIds": [
+        "FR-011"
+      ]
+    },
+    {
+      "id": "US-008",
+      "asA": "resident",
+      "iWant": "to start a renewal from my Active permit inside the stated window, with my stored details prefilled",
+      "soThat": "I do not retype the name, address, plate, and jurisdiction",
+      "requirementIds": [
+        "FR-013"
+      ]
+    },
+    {
+      "id": "US-009",
+      "asA": "parking clerk",
+      "iWant": "to suspend or revoke an Active permit only with a listed reason code",
+      "soThat": "a plate that should no longer be valid is not reported as Active",
+      "requirementIds": [
+        "FR-014",
+        "FR-015"
+      ]
+    },
+    {
+      "id": "US-010",
+      "asA": "enforcement officer",
+      "iWant": "a plate lookup that returns zone, status, and expiry and omits the resident's personal details",
+      "soThat": "the office does not read those details over the phone",
+      "requirementIds": [
+        "FR-019",
+        "FR-020"
+      ]
+    },
+    {
+      "id": "US-011",
+      "asA": "parking sponsor",
+      "iWant": "the monthly counts and fee totals defined for each zone",
+      "soThat": "management can see what was issued, what expired, and what was collected",
+      "requirementIds": [
+        "FR-016"
+      ]
+    }
+  ],
+  "interfaces": [
+    {
+      "id": "IF-001",
+      "name": "CityPay payment",
+      "kind": "software",
+      "direction": "bidirectional",
+      "externalParty": "CityPay",
+      "purpose": "Collect the current zone fee after approval and return the processor's success report.",
+      "dataSent": [
+        "Application identifier",
+        "Current fee amount in US dollars"
+      ],
+      "dataReceived": [
+        "Success or absence of success",
+        "Payment reference when successful",
+        "Amount paid when successful"
+      ],
+      "errorBehavior": "If CityPay does not report success, the portal records no successful payment and does not issue a permit.",
+      "representation": "The source mandates CityPay's hosted card page. Any further message format is deferred to design and may not add card storage.",
+      "requirementIds": [
+        "FR-007",
+        "FR-008",
+        "FR-009",
+        "FR-010",
+        "NFR-006"
+      ],
+      "citations": [
+        "BRD §6.2",
+        "BRD §6.6",
+        "BRD §6.12"
+      ]
+    },
+    {
+      "id": "IF-002",
+      "name": "CityNotify resident email",
+      "kind": "software",
+      "direction": "outbound",
+      "externalParty": "CityNotify",
+      "purpose": "Send the submission, rejection, and issuance notices to the application email address.",
+      "dataSent": [
+        "Recipient email address",
+        "Event: Submitted, Rejected, or permit issued",
+        "Application or permit identifier"
+      ],
+      "dataReceived": [
+        "Whether CityNotify accepted the message"
+      ],
+      "errorBehavior": "Record the failure, send at most 3 attempts for that event, and do not change the application or permit status because the message failed.",
+      "representation": "Deferred to design. The source names CityNotify and the business content only. This interface does not carry the one-time sign-in link (OQ-007).",
+      "requirementIds": [
+        "FR-011",
+        "FR-012"
+      ],
+      "citations": [
+        "BRD §6.9"
+      ]
+    },
+    {
+      "id": "IF-003",
+      "name": "Enforcement plate lookup",
+      "kind": "software",
+      "direction": "inbound",
+      "externalParty": "Enforcement handheld",
+      "purpose": "Answer a plate and jurisdiction with zone, status, and expiry, or not-found, without personal details.",
+      "dataSent": [
+        "Zone, status, and expiry date of a match, or a not-found result"
+      ],
+      "dataReceived": [
+        "License plate",
+        "Jurisdiction"
+      ],
+      "errorBehavior": "Not-found is a normal result and is not an Active permit. A lookup date after the expiry date is not an Active result.",
+      "representation": "Deferred to design under CON-003. The source forbade inventing the wire format. Business content is FR-015, FR-019, and FR-020.",
+      "requirementIds": [
+        "FR-015",
+        "FR-019",
+        "FR-020",
+        "NFR-001"
+      ],
+      "citations": [
+        "BRD §6.10",
+        "BRD §6.11"
+      ]
+    },
+    {
+      "id": "IF-004",
+      "name": "City single sign-on for clerks",
+      "kind": "software",
+      "direction": "inbound",
+      "externalParty": "City single sign-on",
+      "purpose": "Start a parking-clerk session only when the group parking-clerk is asserted.",
+      "dataSent": [
+        "Parking-clerk session, or no session"
+      ],
+      "dataReceived": [
+        "Assertion of the group parking-clerk, or its absence"
+      ],
+      "errorBehavior": "If the group is not asserted, a parking-clerk session does not start.",
+      "representation": "The source names the city single sign-on and the group claim. Token format and protocol were not specified and are deferred to design.",
+      "requirementIds": [
+        "FR-018"
+      ],
+      "citations": [
+        "BRD §6.10"
+      ]
+    }
+  ],
+  "dataEntities": [
+    {
+      "id": "ENT-001",
+      "name": "Application",
+      "description": "One resident request for one vehicle, from drafting through a clerk decision.",
+      "attributes": [
+        {
+          "name": "legal name",
+          "meaning": "The resident's legal name recorded on the application."
+        },
+        {
+          "name": "residential street address",
+          "meaning": "The address compared to the eligible-address list."
+        },
+        {
+          "name": "email address",
+          "meaning": "The address that receives CityNotify mail for this application and that receives the one-time link at sign-in."
+        },
+        {
+          "name": "license plate",
+          "meaning": "The single plate named on the application."
+        },
+        {
+          "name": "jurisdiction",
+          "meaning": "The state or province of that plate."
+        },
+        {
+          "name": "zone",
+          "meaning": "The ordinance zone the application is for."
+        },
+        {
+          "name": "status",
+          "meaning": "Draft while the resident is filling it in, Submitted on the queue, Approved or Rejected after a clerk decision.",
+          "allowedValues": [
+            "Draft",
+            "Submitted",
+            "Approved",
+            "Rejected"
+          ]
+        },
+        {
+          "name": "submission time",
+          "meaning": "The time the application became Submitted, in UTC."
+        },
+        {
+          "name": "rejection reason",
+          "meaning": "The clerk's reason, present when status is Rejected, at least 15 characters."
+        }
+      ],
+      "requirementIds": [
+        "FR-001",
+        "FR-002",
+        "FR-004",
+        "FR-005",
+        "FR-006"
+      ]
+    },
+    {
+      "id": "ENT-002",
+      "name": "ProofOfAddressFile",
+      "description": "The single file required before submission.",
+      "attributes": [
+        {
+          "name": "media type",
+          "meaning": "The file kind the sponsor allowed.",
+          "allowedValues": [
+            "PDF",
+            "JPEG",
+            "PNG"
+          ]
+        },
+        {
+          "name": "size",
+          "meaning": "The file size. Submission requires it to be no greater than 10 megabytes."
+        },
+        {
+          "name": "owning application",
+          "meaning": "The application the file belongs to."
+        }
+      ],
+      "requirementIds": [
+        "FR-003",
+        "FR-020",
+        "NFR-005"
+      ]
+    },
+    {
+      "id": "ENT-003",
+      "name": "Permit",
+      "description": "The permission issued after approval and successful payment, including a renewal's new permit.",
+      "attributes": [
+        {
+          "name": "permit number",
+          "meaning": "A number the portal has not issued before."
+        },
+        {
+          "name": "status",
+          "meaning": "Active at issuance. Suspended or Revoked only with a listed reason code. A lookup does not report Active after the expiry date even if the stored status is still Active.",
+          "allowedValues": [
+            "Active",
+            "Suspended",
+            "Revoked"
+          ]
+        },
+        {
+          "name": "issue date",
+          "meaning": "The calendar date the permit was issued."
+        },
+        {
+          "name": "expiry date",
+          "meaning": "The calendar date 365 days after the issue date."
+        },
+        {
+          "name": "zone",
+          "meaning": "The zone on the issued permit."
+        },
+        {
+          "name": "license plate",
+          "meaning": "The plate on the permit."
+        },
+        {
+          "name": "jurisdiction",
+          "meaning": "The plate jurisdiction on the permit."
+        },
+        {
+          "name": "email address",
+          "meaning": "The email a resident must authenticate with to start a renewal of this permit."
+        },
+        {
+          "name": "legal name",
+          "meaning": "Prefilled onto a renewal. Not returned on a plate lookup."
+        },
+        {
+          "name": "residential street address",
+          "meaning": "Prefilled onto a renewal. Not returned on a plate lookup."
+        }
+      ],
+      "requirementIds": [
+        "FR-010",
+        "FR-013",
+        "FR-014",
+        "FR-015"
+      ]
+    },
+    {
+      "id": "ENT-004",
+      "name": "ZoneFee",
+      "description": "The current ordinance amount for a zone.",
+      "attributes": [
+        {
+          "name": "zone",
+          "meaning": "R-A or R-B on the current card, or a later zone supplied as data."
+        },
+        {
+          "name": "current amount",
+          "meaning": "The US dollar amount shown and sent to CityPay at the moment of handoff."
+        }
+      ],
+      "requirementIds": [
+        "FR-007",
+        "NFR-008"
+      ]
+    },
+    {
+      "id": "ENT-005",
+      "name": "EligibleAddress",
+      "description": "One street address on the cleaned list Parking Services supplies for a zone.",
+      "attributes": [
+        {
+          "name": "zone",
+          "meaning": "The zone the list entry belongs to."
+        },
+        {
+          "name": "street address",
+          "meaning": "The cleaned address text the application is compared to."
+        }
+      ],
+      "requirementIds": [
+        "FR-002",
+        "NFR-008"
+      ]
+    },
+    {
+      "id": "ENT-006",
+      "name": "Payment",
+      "description": "The record of what CityPay reported for an application.",
+      "attributes": [
+        {
+          "name": "application",
+          "meaning": "The application the payment is for."
+        },
+        {
+          "name": "amount",
+          "meaning": "The amount CityPay reported, present on success."
+        },
+        {
+          "name": "reference",
+          "meaning": "The CityPay payment reference, present on success."
+        },
+        {
+          "name": "outcome",
+          "meaning": "Success only when CityPay reported success. Otherwise no successful payment is recorded."
+        }
+      ],
+      "requirementIds": [
+        "FR-009",
+        "FR-010",
+        "FR-016"
+      ]
+    },
+    {
+      "id": "ENT-007",
+      "name": "Notification",
+      "description": "One CityNotify send for a Submitted, Rejected, or issued event.",
+      "attributes": [
+        {
+          "name": "event",
+          "meaning": "Submitted, Rejected, or permit issued."
+        },
+        {
+          "name": "recipient",
+          "meaning": "The email address on the application."
+        },
+        {
+          "name": "attempt count",
+          "meaning": "How many times this event was sent. The cap is 3."
+        },
+        {
+          "name": "accepted",
+          "meaning": "Whether CityNotify accepted the message."
+        }
+      ],
+      "requirementIds": [
+        "FR-011",
+        "FR-012"
+      ]
+    },
+    {
+      "id": "ENT-008",
+      "name": "AuditRecord",
+      "description": "The record appended for each approval, rejection, issuance, suspension, and revocation.",
+      "attributes": [
+        {
+          "name": "actor",
+          "meaning": "Who performed the action."
+        },
+        {
+          "name": "time",
+          "meaning": "When the action was recorded, in UTC."
+        },
+        {
+          "name": "action",
+          "meaning": "Approval, rejection, issuance, suspension, or revocation."
+        },
+        {
+          "name": "reason or payment reference",
+          "meaning": "The clerk's reason, the reason code, or the CityPay reference, as the action requires."
+        }
+      ],
+      "requirementIds": [
+        "NFR-009"
+      ]
+    }
+  ],
+  "glossary": [
+    {
+      "term": "Active",
+      "definition": "The permit status at issuance. A lookup reports Active only under FR-015.",
+      "source": "BRD §6.6, BRD §6.11"
+    },
+    {
+      "term": "Approved",
+      "definition": "The clerk decision that moves a Submitted application to Approved.",
+      "source": "BRD §6.6"
+    },
+    {
+      "term": "CityNotify",
+      "definition": "The city's existing mail relay for the submission, rejection, and issuance emails. It is not stated to carry the one-time sign-in link.",
+      "source": "BRD §6.9"
+    },
+    {
+      "term": "CityPay",
+      "definition": "The city's existing card processor. It hosts the page where the resident enters the card.",
+      "source": "BRD §6.6, BRD §6.12"
+    },
+    {
+      "term": "Current fee",
+      "definition": "The ordinance amount for the application's zone at the moment the resident is sent to pay.",
+      "source": "BRD §6.2"
+    },
+    {
+      "term": "Draft",
+      "definition": "An application the resident is still filling in. It is not on the clerk queue.",
+      "source": "BRD §6.6"
+    },
+    {
+      "term": "Eligible-address list",
+      "definition": "The cleaned list of street addresses Parking Services supplies for a zone. Comparison is exact against that list. Fuzzy matching is out.",
+      "source": "BRD §6.3"
+    },
+    {
+      "term": "Jurisdiction",
+      "definition": "The state or province of a license plate.",
+      "source": "BRD §6.1"
+    },
+    {
+      "term": "Not-found",
+      "definition": "The lookup result when no permit matches the plate and jurisdiction. It is not an Active permit.",
+      "source": "BRD §6.11"
+    },
+    {
+      "term": "Parking-clerk role",
+      "definition": "The session started only when city single sign-on asserts the group parking-clerk.",
+      "source": "BRD §6.10"
+    },
+    {
+      "term": "Proof-of-address file",
+      "definition": "The single file on an application. The sponsor also says proof of address. PDF, JPEG, or PNG, no larger than 10 megabytes.",
+      "source": "BRD §6.4"
+    },
+    {
+      "term": "Rejected",
+      "definition": "The clerk decision on a Submitted application when a reason of at least 15 characters is recorded.",
+      "source": "BRD §6.5"
+    },
+    {
+      "term": "Revoked",
+      "definition": "A permit status a clerk sets from Active with a listed reason code. A lookup does not report it as Active.",
+      "source": "BRD §6.8"
+    },
+    {
+      "term": "Submitted",
+      "definition": "An application accepted onto the clerk review queue, with the submission time in UTC.",
+      "source": "BRD §6.6"
+    },
+    {
+      "term": "Suspended",
+      "definition": "A permit status a clerk sets from Active with a listed reason code. A lookup does not report it as Active.",
+      "source": "BRD §6.8"
+    },
+    {
+      "term": "Zone",
+      "definition": "An ordinance parking area. The current card names R-A Residential Core at 60 US dollars a year and R-B Waterfront at 90 US dollars a year.",
+      "source": "BRD §6.2"
+    }
+  ],
+  "openQuestions": [
+    {
+      "id": "OQ-001",
+      "question": "How many Active permits may one household hold?",
+      "whyItMatters": "A cap would be a new eligibility rule. The sponsor said no number exists.",
+      "blocking": false,
+      "mustNotBeInvented": "Any number of permits per household, and any shall that limits or grants a household cap.",
+      "raisedBySkill": "01-intake",
+      "status": "open",
+      "answerableBy": "Dana Okonkwo, the sponsor. She said the policy is not written.",
+      "citations": [
+        "BRD §5",
+        "BRD §9"
+      ]
+    },
+    {
+      "id": "OQ-002",
+      "question": "Which record produces the cleaned eligible-address list, and how often will Parking Services refresh it?",
+      "whyItMatters": "An upstream interface or a freshness shall would depend on this answer.",
+      "blocking": false,
+      "mustNotBeInvented": "Any integration to a tax roll, utility account, or other system of record, and any refresh interval.",
+      "raisedBySkill": "03-scope-context",
+      "status": "open",
+      "answerableBy": "Dana Okonkwo. She said she does not yet know.",
+      "citations": [
+        "BRD §6.3",
+        "BRD §9"
+      ]
+    },
+    {
+      "id": "OQ-003",
+      "question": "How long must a proof-of-address file be kept?",
+      "whyItMatters": "A retention or deletion shall cannot be tested without a period.",
+      "blocking": false,
+      "mustNotBeInvented": "Any retention period, deletion date, or archive rule for the file.",
+      "raisedBySkill": "07-data-interfaces",
+      "status": "open",
+      "answerableBy": "The sponsor said Legal has not answered and named no person. Dana Okonkwo is the person who can bring that answer into the request.",
+      "citations": [
+        "BRD §9"
+      ]
+    },
+    {
+      "id": "OQ-004",
+      "question": "What response time is required for resident page tasks, and how many applications arrive in a peak hour?",
+      "whyItMatters": "The only quantified performance target in the source is the plate lookup.",
+      "blocking": false,
+      "mustNotBeInvented": "Any page-response budget or application-volume figure.",
+      "raisedBySkill": "06-nonfunctional-reqs",
+      "status": "open",
+      "answerableBy": "Dana Okonkwo. She stated that she did not have these figures.",
+      "citations": [
+        "BRD §8",
+        "BRD §9"
+      ]
+    },
+    {
+      "id": "OQ-005",
+      "question": "How quickly must the portal be restored after an unplanned outage?",
+      "whyItMatters": "POL-AVAIL-03 as cited sets monthly availability and planned-maintenance notice, not a restore time.",
+      "blocking": false,
+      "mustNotBeInvented": "Any restore-time target or unplanned-outage procedure.",
+      "raisedBySkill": "06-nonfunctional-reqs",
+      "status": "open",
+      "answerableBy": "Dana Okonkwo.",
+      "citations": [
+        "BRD §9"
+      ]
+    },
+    {
+      "id": "OQ-006",
+      "question": "Who is allowed to request the monthly zone totals?",
+      "whyItMatters": "FR-016 states the figures and names no actor, because the source names none.",
+      "blocking": false,
+      "mustNotBeInvented": "Any role, including clerk or sponsor, as the only party allowed to request the report.",
+      "raisedBySkill": "04-functional-reqs",
+      "status": "open",
+      "answerableBy": "Dana Okonkwo. BRD §6.14 records that this was not discussed.",
+      "citations": [
+        "BRD §6.14",
+        "BRD §9"
+      ]
+    },
+    {
+      "id": "OQ-007",
+      "question": "Which channel sends the resident's one-time sign-in link?",
+      "whyItMatters": "CityNotify is mandated for three other emails. The sign-in link is a separate send, and the source does not name its channel.",
+      "blocking": false,
+      "mustNotBeInvented": "A decision that the link uses CityNotify, or a second mail product.",
+      "raisedBySkill": "07-data-interfaces",
+      "status": "open",
+      "answerableBy": "Dana Okonkwo.",
+      "citations": [
+        "BRD §6.9",
+        "BRD §6.10"
+      ]
+    }
+  ],
+  "qualityModelCoverage": [
+    {
+      "characteristic": "functional-suitability",
+      "disposition": "covered",
+      "requirementIds": [
+        "FR-001",
+        "FR-002",
+        "FR-003",
+        "FR-004",
+        "FR-005",
+        "FR-006",
+        "FR-007",
+        "FR-008",
+        "FR-009",
+        "FR-010",
+        "FR-011",
+        "FR-012",
+        "FR-013",
+        "FR-014",
+        "FR-015",
+        "FR-016",
+        "FR-017",
+        "FR-018",
+        "FR-019",
+        "FR-020"
+      ],
+      "openQuestionIds": [],
+      "rationale": "Functional suitability is specified by the functional requirements. Those statements are not copied again as non-functional requirements."
+    },
+    {
+      "characteristic": "performance-efficiency",
+      "disposition": "covered",
+      "requirementIds": [
+        "NFR-001"
+      ],
+      "openQuestionIds": [
+        "OQ-004"
+      ],
+      "rationale": "Lookup time-behaviour is specified. Resident-page time and capacity were not stated and stay in OQ-004. No target was invented for them."
+    },
+    {
+      "characteristic": "compatibility",
+      "disposition": "covered",
+      "requirementIds": [
+        "FR-008",
+        "FR-009",
+        "FR-011",
+        "FR-018",
+        "FR-019"
+      ],
+      "openQuestionIds": [],
+      "rationale": "Interoperability is the sourced behavior with CityPay, CityNotify, city single sign-on, and the handheld lookup. Co-existence with another named product on the same host was not required and is not applicable."
+    },
+    {
+      "characteristic": "interaction-capability",
+      "disposition": "covered",
+      "requirementIds": [
+        "NFR-002",
+        "NFR-003"
+      ],
+      "openQuestionIds": [],
+      "rationale": "The 2011 name is usability. The sponsor's cited obligations are the 360 CSS pixel tasks and WCAG 2.2 Level AA."
+    },
+    {
+      "characteristic": "reliability",
+      "disposition": "covered",
+      "requirementIds": [
+        "NFR-007"
+      ],
+      "openQuestionIds": [
+        "OQ-005"
+      ],
+      "rationale": "Availability is the cited monthly percentage. Recoverability after an unplanned outage was not stated and is OQ-005."
+    },
+    {
+      "characteristic": "security",
+      "disposition": "covered",
+      "requirementIds": [
+        "NFR-005",
+        "NFR-006",
+        "NFR-009",
+        "FR-017",
+        "FR-018",
+        "FR-020"
+      ],
+      "openQuestionIds": [],
+      "rationale": "Confidentiality, accountability, and authenticity are the sourced obligations. No cipher, vault, or token format was added."
+    },
+    {
+      "characteristic": "maintainability",
+      "disposition": "not-stated",
+      "requirementIds": [],
+      "openQuestionIds": [],
+      "rationale": "The sponsor stated no analysability, modifiability, testability, or reuse target. No maintainability index was invented. This is not a design standard imported from outside the source."
+    },
+    {
+      "characteristic": "flexibility",
+      "disposition": "covered",
+      "requirementIds": [
+        "NFR-004",
+        "NFR-008"
+      ],
+      "openQuestionIds": [],
+      "rationale": "The 2011 name is portability. Adaptability covers the cited browser matrix and the requirement that fees and the address list change without a software release."
+    },
+    {
+      "characteristic": "safety",
+      "disposition": "not-applicable",
+      "requirementIds": [],
+      "openQuestionIds": [],
+      "rationale": "The portal does not control vehicles, barriers, or signals. A wrong permit status is specified as functional correctness and confidentiality, not as the safety characteristic."
+    }
+  ],
+  "traceability": {
+    "matrix": "rtm.csv",
+    "idFreeze": true,
+    "needsWithoutCoverage": [],
+    "orphanRequirementIds": [],
+    "requirementsMissingAcceptanceCriteria": [],
+    "designColumn": "Blank until the design agent writes an element id. The requirements agent leaves it empty.",
+    "testColumn": "Blank until the test agent writes a case id. The requirements agent leaves it empty."
+  },
+  "approval": {
+    "status": "proposed",
+    "gates": [
+      {
+        "id": "G1",
+        "result": "pass",
+        "notes": "Problem, needs, register, scope, and glossary seeds are cited. No requirement was written before G1 passed."
+      },
+      {
+        "id": "G2",
+        "result": "pass",
+        "notes": "Each in-scope need has requirements. Quality coverage has nine rows. Scenarios cite requirement ids only."
+      },
+      {
+        "id": "G3",
+        "result": "pass",
+        "notes": "Checklist cycle 1 found no unsupported shall. Open topics stayed in the question register."
+      },
+      {
+        "id": "G4",
+        "result": "pass",
+        "notes": "The matrix covers every need and every proposed requirement. Identifiers are frozen. Consumer columns are empty."
+      },
+      {
+        "id": "G5",
+        "result": "ready",
+        "notes": "Package assembled and validated. Human approval is not recorded. Status remains proposed."
+      }
+    ],
+    "residualOpenQuestionIds": [
+      "OQ-001",
+      "OQ-002",
+      "OQ-003",
+      "OQ-004",
+      "OQ-005",
+      "OQ-006",
+      "OQ-007"
+    ],
+    "blockingOpenQuestionIds": [],
+    "residualRiskAccepted": false,
+    "consumers": [
+      "design",
+      "build",
+      "test"
+    ],
+    "humanApproval": {
+      "recorded": false,
+      "note": "The requirements agent does not approve this SRS. A named person records approval before status may become approved or handed-off."
+    }
+  }
+}
