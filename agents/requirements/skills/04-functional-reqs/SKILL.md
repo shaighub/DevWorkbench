@@ -1,5 +1,5 @@
 ---
-name: requirements-functional
+name: requirements-04-functional-reqs
 description: >
   Use during gate G2, after G1 has passed, to write functional shall
   statements, MoSCoW priorities, and Gherkin acceptance criteria from

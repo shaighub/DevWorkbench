@@ -1,5 +1,5 @@
 ---
-name: requirements-use-cases-stories
+name: requirements-05-use-cases-stories
 description: >
   Use during gate G2, after functional requirements exist, to group them
   into use cases and user stories for readers. Use again when validation

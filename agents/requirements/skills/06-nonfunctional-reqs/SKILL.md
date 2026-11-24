@@ -1,5 +1,5 @@
 ---
-name: requirements-nonfunctional
+name: requirements-06-nonfunctional-reqs
 description: >
   Use during gate G2, after functional requirements exist, to write
   non-functional shall statements under ISO/IEC 25010:2023 and to record a

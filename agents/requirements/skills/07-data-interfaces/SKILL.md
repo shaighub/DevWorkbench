@@ -1,5 +1,5 @@
 ---
-name: requirements-data-interfaces
+name: requirements-07-data-interfaces
 description: >
   Use during gate G2, after functional and non-functional requirements
   exist, to describe logical data and external interfaces at business level.

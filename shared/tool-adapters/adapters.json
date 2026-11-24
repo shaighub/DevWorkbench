@@ -1,0 +1,21 @@
+{
+  "instructions": "instructions.md.tmpl",
+  "command": "command.md.tmpl",
+  "targets": {
+    "claude": {
+      "instruction": "CLAUDE.md",
+      "skills": ".claude/skills",
+      "commands": ".claude/commands"
+    },
+    "cursor": {
+      "instruction": "AGENTS.md",
+      "skills": ".cursor/skills",
+      "commands": ".cursor/commands"
+    },
+    "opencode": {
+      "instruction": "AGENTS.md",
+      "skills": ".opencode/skills",
+      "commands": ".opencode/commands"
+    }
+  }
+}

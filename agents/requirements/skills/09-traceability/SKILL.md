@@ -1,5 +1,5 @@
 ---
-name: requirements-traceability
+name: requirements-09-traceability
 description: >
   Use at gate G4, after validation has passed, to build the requirements
   traceability matrix, prove need and requirement coverage, and freeze

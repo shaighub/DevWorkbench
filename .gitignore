@@ -1,0 +1,10 @@
+# Published by scripts/setup.py. Local to each workstation.
+/CLAUDE.md
+/AGENTS.md
+/.claude/
+/.cursor/
+/.opencode/
+/.devworkbench/
+
+__pycache__/
+*.pyc

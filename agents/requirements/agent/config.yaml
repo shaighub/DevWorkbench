@@ -61,70 +61,70 @@ limits:
 skills:
   - id: "01"
     directory: skills/01-intake
-    name: requirements-intake
+    name: requirements-01-intake
     gate: G1
     produces:
       - working/01-intake.md
       - working/01-intake.json
   - id: "02"
     directory: skills/02-stakeholders
-    name: requirements-stakeholders
+    name: requirements-02-stakeholders
     gate: G1
     produces:
       - working/02-stakeholders.md
       - working/02-stakeholders.json
   - id: "03"
     directory: skills/03-scope-context
-    name: requirements-scope-context
+    name: requirements-03-scope-context
     gate: G1
     produces:
       - working/03-scope-context.md
       - working/03-scope-context.json
   - id: "04"
     directory: skills/04-functional-reqs
-    name: requirements-functional
+    name: requirements-04-functional-reqs
     gate: G2
     produces:
       - working/04-functional-reqs.md
       - working/04-functional-reqs.json
   - id: "05"
     directory: skills/05-use-cases-stories
-    name: requirements-use-cases-stories
+    name: requirements-05-use-cases-stories
     gate: G2
     produces:
       - working/05-use-cases-stories.md
       - working/05-use-cases-stories.json
   - id: "06"
     directory: skills/06-nonfunctional-reqs
-    name: requirements-nonfunctional
+    name: requirements-06-nonfunctional-reqs
     gate: G2
     produces:
       - working/06-nonfunctional-reqs.md
       - working/06-nonfunctional-reqs.json
   - id: "07"
     directory: skills/07-data-interfaces
-    name: requirements-data-interfaces
+    name: requirements-07-data-interfaces
     gate: G2
     produces:
       - working/07-data-interfaces.md
       - working/07-data-interfaces.json
   - id: "08"
     directory: skills/08-validation
-    name: requirements-validation
+    name: requirements-08-validation
     gate: G3
     produces:
       - working/08-validation.md
       - working/08-validation.json
   - id: "09"
     directory: skills/09-traceability
-    name: requirements-traceability
+    name: requirements-09-traceability
     gate: G4
     produces:
       - working/09-traceability.md
       - rtm.csv
   - id: "10"
     directory: skills/10-srs-assembly
-    name: requirements-srs-assembly
+    name: requirements-10-srs-assembly
     gate: G5
     produces:
       - srs.md

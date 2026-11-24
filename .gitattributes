@@ -1,0 +1,5 @@
+# setup.cmd is batch and must stay CRLF. Shell scripts and Python stay LF.
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.sh text eol=lf
+*.py text eol=lf
