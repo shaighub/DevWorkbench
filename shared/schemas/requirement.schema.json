@@ -1,0 +1,203 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://devworkbench.local/schemas/requirement.schema.json",
+  "title": "Requirement",
+  "description": "One functional or non-functional requirement. The statement is a single ISO/IEC/IEEE 29148 shall. MoSCoW lives in priority and is never encoded by writing should or may in the statement. A non-functional requirement names an ISO/IEC 25010:2023 product-quality characteristic.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "type",
+    "statement",
+    "priority",
+    "priorityRationale",
+    "source",
+    "acceptanceCriteria",
+    "status",
+    "rationale",
+    "verificationMethod"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^(FR|NFR)-[0-9]{3}$",
+      "description": "Stable identifier. FR-### functional. NFR-### non-functional. Never reuse a withdrawn identifier."
+    },
+    "type": {
+      "enum": ["functional", "non-functional"]
+    },
+    "statement": {
+      "type": "string",
+      "minLength": 20,
+      "pattern": "\\bshall\\b",
+      "description": "One testable obligation. Exactly one shall. No TBD, no etc., no and/or."
+    },
+    "priority": {
+      "description": "MoSCoW commitment for this release.",
+      "enum": ["Must", "Should", "Could", "Won't"]
+    },
+    "priorityRationale": {
+      "type": "string",
+      "minLength": 10,
+      "description": "Why this MoSCoW value follows from the source. Cite the sponsor's commitment language."
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["needIds", "citations"],
+      "properties": {
+        "needIds": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^NEED-[0-9]{3}$"
+          },
+          "description": "High-level needs this requirement traces to. At least one."
+        },
+        "citations": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 3
+          },
+          "description": "Locations in the source (for example BRD §6.3) that authorize this statement."
+        },
+        "stakeholderIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^STK-[0-9]{3}$"
+          }
+        },
+        "policyIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^POL-[A-Z]+-[0-9]{2}$"
+          }
+        }
+      }
+    },
+    "acceptanceCriteria": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "gherkin"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^AC-(FR|NFR)-[0-9]{3}-[0-9]{2}$",
+            "description": "AC-<requirement id>-<nn>. The embedded requirement id must equal the parent requirement."
+          },
+          "title": {
+            "type": "string",
+            "minLength": 3
+          },
+          "gherkin": {
+            "type": "string",
+            "minLength": 15,
+            "pattern": "Given[\\s\\S]+When[\\s\\S]+Then[\\s\\S]+",
+            "description": "Given / When / Then. Values are either from the source or labeled example fixtures of a sourced rule."
+          }
+        }
+      }
+    },
+    "status": {
+      "description": "draft: still being written. proposed: ready for the sponsor. approved: sponsor accepted this statement. deferred or rejected: kept so the identifier is not reused.",
+      "enum": ["draft", "proposed", "approved", "deferred", "rejected"]
+    },
+    "rationale": {
+      "type": "string",
+      "minLength": 10,
+      "description": "Why this obligation exists and any boundary that was deliberately left out because the source did not decide it."
+    },
+    "verificationMethod": {
+      "description": "Primary verification method from ISO/IEC/IEEE 29148.",
+      "enum": ["inspection", "demonstration", "test", "analysis"]
+    },
+    "qualityAttribute": {
+      "description": "ISO/IEC 25010:2023 characteristic. Required on non-functional requirements. Forbidden on functional requirements.",
+      "enum": [
+        "functional-suitability",
+        "performance-efficiency",
+        "compatibility",
+        "interaction-capability",
+        "reliability",
+        "security",
+        "maintainability",
+        "flexibility",
+        "safety"
+      ]
+    },
+    "qualitySubcharacteristic": {
+      "type": "string",
+      "minLength": 3,
+      "description": "ISO/IEC 25010:2023 subcharacteristic, in kebab-case (for example time-behaviour, confidentiality)."
+    },
+    "useCaseIds": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^UC-[0-9]{3}$"
+      }
+    },
+    "userStoryIds": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^US-[0-9]{3}$"
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "type": { "const": "non-functional" } },
+        "required": ["type"]
+      },
+      "then": {
+        "required": ["qualityAttribute", "qualitySubcharacteristic"]
+      }
+    },
+    {
+      "if": {
+        "properties": { "type": { "const": "functional" } },
+        "required": ["type"]
+      },
+      "then": {
+        "properties": {
+          "qualityAttribute": false,
+          "qualitySubcharacteristic": false
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "id": { "pattern": "^FR-" } },
+        "required": ["id"]
+      },
+      "then": {
+        "properties": { "type": { "const": "functional" } }
+      }
+    },
+    {
+      "if": {
+        "properties": { "id": { "pattern": "^NFR-" } },
+        "required": ["id"]
+      },
+      "then": {
+        "properties": { "type": { "const": "non-functional" } }
+      }
+    }
+  ]
+}
