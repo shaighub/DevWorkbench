@@ -235,21 +235,70 @@ stateDiagram-v2
   Build --> Test: human approves the handoff
   Test --> Release: human approves the handoff
   Release --> [*]
-  Design --> Requirements: change request reopens the owning gate
-  note right of Design: The request is an artifact. Design does not edit the SRS
+  Design --> Requirements: requirements change
+  Build --> Requirements: requirements change
+  Test --> Requirements: requirements change
+  Release --> Requirements: requirements change
+  note right of Design: A design-only dispute returns to Design. The requester does not edit the SRS
 ```
 
-A phase transition consumes a package in status `approved` or `handed-off`. That rule is already the handoff contract. `proposed` stays on the requirements side of the boundary until a person approves it.
+A phase transition consumes a package in status `approved` or `handed-off`. That rule is already the handoff contract. `proposed` stays on the requirements side of the boundary until a person approves it. The return arrows are requirements changes. A dispute that leaves the shall intact returns to the phase that owns it, which for an allocation is Design.
 
 Roadmap intent for the phases that have no skills yet is in [docs/sdlc-gates.md](sdlc-gates.md) under "Roadmap gates". Design allocates every requirement and fills Design Element ID inside the business data the SRS allows. Build implements only traced behavior and fills the code column. Test writes a result for each Gherkin criterion and fills Test Case ID. Release ships the Must set and still lists open questions. None of those agents exist.
 
 ### Change requests
 
-A downstream agent that disagrees with a frozen shall does not edit `srs.json` and does not call the requirements agent. It submits a change request. The orchestrator routes it to the owning agent and reopens the named gate. The diagram shows the loop the next phase has to prove: Design back to Requirements. Build and Test use the same route when they exist.
+Any phase may propose a change request: Design, Build, Test, or Release. The requester writes the artifact, cites the package version and the requirement ids, and stops work on those ids. It does not edit the owner's files and it does not call the owner. The request carries the conflict and the gate to reopen. It does not carry a replacement shall.
 
-The request cites the package version, the requirement ids, the conflict, and the gate and skill to reopen. It does not contain a replacement shall. The requirements agent files any new source note under `source/` as a new file, leaves the original untouched, and runs from the earliest skill the answer touches. Identifiers stay frozen: a replacement statement gets a new id, and the old id becomes `deferred` or `rejected`. A person approves the new baseline. The event log records the request, the reopen, and the approval.
+A person approves or rejects the request. That decision is what moves the phase. A rejection leaves the current approved version in force, and the requester continues on it. An approval reopens the owning gate and records the event.
 
-Today this loop is a written rule in [docs/agent-handoff.md](agent-handoff.md) ("Change after baseline"). There is no change-request schema and no second agent to raise one.
+| What is disputed | Owner that reopens | Upstream that stays on the current version |
+| --- | --- | --- |
+| Shall, priority, need, or acceptance criterion | Requirements, at the named gate | None for those ids. Later phases wait for the new SRS version |
+| Design allocation, while the shall still stands | Design | The approved SRS |
+| Code that cannot meet the shall or the allocation | The owner of the disputed artifact, Requirements or Design | That owner's current version |
+| A failed Gherkin result whose criterion still stands | Test. This is a defect in Test, not a change request | The approved SRS, design, and build |
+
+The owner runs from the reopened skill and proposes a new package version. For a requirements change, a new source note is filed under `source/` as a new file. The original source stays untouched. Identifiers stay frozen: a changed statement's old id becomes `deferred` or `rejected`, and the replacement gets a new id. A person approves the owner's gates and the new handoff. The event log records the request, the reopen, and that approval.
+
+### Completed phases
+
+Completed phases are not run again from an empty package. The RTM is the impact list, and a person approves each phase that the impact touches.
+
+On the new version:
+
+- A row whose requirement id is unchanged keeps its design, code, and test cells.
+- A `deferred` or `rejected` id keeps those cells as history. They are not the active baseline.
+- A new id starts with empty consumer cells.
+
+The orchestrator then walks forward from the owner. Each later phase that already filled a cell on an affected row reopens. It copies the unchanged rows, reworks the affected rows, and proposes an impact package. A person approves that package before the next phase runs. A later phase that has never started is not replayed. It starts when the walk reaches it, on the new version.
+
+Unapproved work in the requesting phase is kept only where it still traces to an unchanged id. Rows named in the request are stale until the new version is approved. Release waits while that new version is still moving through the impacted phases. It ships after those approvals, and the release note still lists unanswered questions.
+
+Example. SRS 1.2 and Design 1.2 are approved, and Build raises a request against `FR-014`. A person approves the request. Requirements marks `FR-014` rejected, adds `FR-031`, and a person approves SRS 1.3. Design reopens for those two rows: it detaches the old design element and allocates `FR-031`. Every other design element is copied. A person approves Design 1.3. Build reopens for `FR-031` and withdraws the `FR-014` behavior. A person approves that impact. If Test has not started, it later runs `FR-031`'s Gherkin on Build 1.3. If Test already recorded a result for `FR-014`, Test reopens for that row and a person approves the revised result.
+
+A design-only request does not reopen Requirements. Build and Test still replay the affected rows, each with its own approval.
+
+```mermaid
+flowchart TD
+  raise["Any phase proposes a change request"]
+  decide{"Human decision on the request"}
+  keep["Current approved version stays in force"]
+  reopen["Owning gate reopens on a new version"]
+  ownerOk["Human approves the owner handoff"]
+  impact["Each completed later phase proposes an impact package"]
+  impactOk["Human approves that impact"]
+  resume["Work resumes on the new version"]
+  raise --> decide
+  decide -->|reject| keep
+  decide -->|approve| reopen
+  reopen --> ownerOk
+  ownerOk --> impact
+  impact --> impactOk
+  impactOk --> resume
+```
+
+Today the return to intake is a written rule in [docs/agent-handoff.md](agent-handoff.md) ("Change after baseline"). There is no change-request schema, no second agent to raise one, and no impact replay.
 
 ## Data contracts
 
