@@ -4,6 +4,8 @@ DevWorkbench is a workbench of AI agents for the software lifecycle. Each agent 
 
 This repository currently contains one agent: **requirements**. Design, build, test, release, and operate are named in the roadmap so the requirements package has a defined consumer. Those agents are not built yet.
 
+The architecture of the workbench, including what is still a target, is in [docs/architecture.md](docs/architecture.md).
+
 The requirements agent is independent of any particular bot product or agent framework. The procedure is Markdown. Any assistant that can read the skill files and write the output folder can run it.
 
 ## Set up a coding tool
@@ -39,7 +41,7 @@ Open the repository in VS Code and run `/requirements` followed by the high-leve
 | Release | not started | Test evidence for the Must set | A release note that still lists unanswered questions | Planned |
 | Operate | not started | A released system | Feedback that re-enters requirements intake | Planned |
 
-Gates, entry and exit criteria, and the skill mapping are in [docs/sdlc-gates.md](docs/sdlc-gates.md). The file contract between agents is in [docs/agent-handoff.md](docs/agent-handoff.md).
+The architecture is in [docs/architecture.md](docs/architecture.md). Gates, entry and exit criteria, and the skill mapping are in [docs/sdlc-gates.md](docs/sdlc-gates.md). The file contract between agents is in [docs/agent-handoff.md](docs/agent-handoff.md).
 
 ## Standards the requirements agent applies
 
@@ -78,6 +80,7 @@ DevWorkbench/
   README.md
   setup.cmd
   setup.sh
+  docs/architecture.md
   docs/sdlc-gates.md
   docs/agent-handoff.md
   docs/tool-setup.md
